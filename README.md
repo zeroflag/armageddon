@@ -1,3 +1,3 @@
 # Armageddon
 
-A programming language defined entirely DEBUG.COM.
+A programming language defined entirely in DEBUG.COM.
