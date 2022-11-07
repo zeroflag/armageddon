@@ -1,0 +1,573 @@
+-; ARMAGEDDON FORTH in DEBUG.COM
+-n forth.com
+-rcx FFFF
+-a 100 
+06B0:0100 ; ENTRY POINT
+06B0:0100 cld
+06B0:0101 mov ah, 9
+06B0:0103 mov dx, 350 ; info text
+06B0:0106 int 21      ; write out info txt
+06B0:0108 mov sp, 200 ; SET SP TO @DATA_STACK
+06B0:010B mov bp, 220 ; SET BP TO @RETURN_STACK
+06B0:010E mov si, 500 ; SET IP TO @TXT_INTERPRETER
+06B0:0111 lodsw       ; NEXT
+06B0:0112 jmp ax
+06B0:0114 
+-; TODOs negative number, DEPTH, if then utan
+-
+-; DATA STACK GOES DOWN to 0
+-a 200
+06B0:0200 
+-; RETURN STACK 2x16b - ADDR=220h - GOES UP
+-dw 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+       ^ Error
+-
+-a 240
+06B0:0240 ; INPUT_INDEX
+06B0:0240 db 0
+06B0:0241 
+-a 242
+06B0:0242 ; INPUT BUFFER 190b, first byte is the length of the buffer - ADDR=242h
+06B0:0242 ; after reading from STDIN the 2nd byte contains the length of the actual input
+06B0:0242 db BC,0,D,0,0,0,0,0,0,0,0,0,0,0,0,0
+06B0:0252 
+-a 302
+06B0:0302 ; STATE
+06B0:0302 db 0 
+06B0:0303 
+-a 304
+06B0:0304 ; HERE
+06B0:0304 dw B00
+06B0:0306 
+-a 306
+06B0:0306 ; LAST_WORD
+06B0:0306 dw 2F00
+06B0:0308 
+-a 350
+06B0:0350 db "Welcome to Armageddon v0.001","$"
+06B0:036D 
+-a 400
+06B0:0400 ; DOCOLON - ADDR=400h
+06B0:0400 mov [bp], si
+06B0:0403 add bp, 2
+06B0:0406 add ax, 6  ; skip JMP DOCOL TODO van benne egy nop
+06B0:0409 mov si, ax ; mov IP to the next instruction after JMP DOCOL
+06B0:040B lodsw
+06B0:040C jmp ax
+06B0:040E 
+-a 500
+06B0:0500 ; TEXT_INTERPRETER - ADDR=500h
+06B0:0500 ;@loop:
+06B0:0500   ;  WORD                          ; ( -- len a )   
+06B0:0500   dw 1C05
+06B0:0502   ;  FIND                          ; ( len a -- IM? XT TRUE | a len FALSE )
+06B0:0502   dw 1D05
+06B0:0504   ;  BRANCH0  @unknown
+06B0:0504   dw 1508,    20
+06B0:0508   ;  SWAP, INVERT                  ; immediate?
+06B0:0508   dw 1205, 1607                    
+06B0:050C   ;  BRANCH0 @exec                 ; jump if immediate
+06B0:050C   dw 1508,   12       
+06B0:0510   ;  LIT   STATE @                 ; interpret mode?
+06B0:0510   dw 1104, 302,  1902              
+06B0:0516   ;  BRANCH0 @exec                 ; jump if we're interpret mode
+06B0:0516   dw 1508,   08                  
+06B0:051A   ;  ,                             ; compile
+06B0:051A   dw 1B02
+06B0:051C   ;  BRANCH @loop  
+06B0:051C   dw 1407,   ffe2
+06B0:0520 ;@exec:  
+06B0:0520   ;  EXEC
+06B0:0520   dw 1705
+06B0:0522   ;  BRANCH @loop
+06B0:0522   dw 1407,  ffdc
+06B0:0526 ;@unknown:
+06B0:0526   ; >NUM                           ; ( num bool )
+06B0:0526   dw 1E05
+06B0:0528   ;  BRANCH0 @NaN  
+06B0:0528   dw 1508,   18  
+06B0:052C   ;  LIT   STATE  @      
+06B0:052C   dw 1104, 302,   1902
+06B0:0532   ;  BRANCH0  @loop
+06B0:0532   dw 1508,    ffcc
+06B0:0536   ;  LIT   LIT   ,     ,          ; ( compile the number literal )  
+06B0:0536   dw 1104, 1104, 1B02, 1B02
+06B0:053E   ;  BRANCH @loop
+06B0:053E   dw 1407,  ffc0
+06B0:0542 ;@NaN:
+06B0:0542   ;  LIT   3F  EMIT               ; emit error message
+06B0:0542   dw 1104, 3F, 1005              
+06B0:0548   ;  LIT   0  LIT   STATE !       ; switch back to interpret mode
+06B0:0548   dw 1104, 0, 1104, 0302, 1A02
+06B0:0552   ;  BRANCH  @loop
+06B0:0552   dw 1407,   ffac
+06B0:0556     
+-; DICTIONARY - ADDR=1000h
+-
+-; DEFINE PRIMITIVE
+-a 1000
+06B0:1000 db 4,"emit"
+06B0:1005 ; XT EMIT
+06B0:1005 pop dx
+06B0:1006 mov ah, 02
+06B0:1008 int 21
+06B0:100A lodsw
+06B0:100B jmp ax
+06B0:100D 
+-; DEFINE PRIMITIVE
+-a 1100
+06B0:1100 db 3,"lit"
+06B0:1104 ; XT LIT
+06B0:1104 lodsw
+06B0:1105 push ax
+06B0:1106 lodsw
+06B0:1107 jmp ax
+06B0:1109 
+-; DEFINE PRIMITIVE
+-a 1200
+06B0:1200 db 4,"swap"
+06B0:1205 ; XT SWAP
+06B0:1205 pop ax
+06B0:1206 pop bx
+06B0:1207 push ax
+06B0:1208 push bx
+06B0:1209 lodsw
+06B0:120A jmp ax
+06B0:120C 
+-; DEFINE PRIMITIVE
+-a 1300
+06B0:1300 db 4,"quit"
+06B0:1305 ; XT QUIT
+06B0:1305 xor ah,ah
+06B0:1307 int 21
+06B0:1309 jmp 0
+06B0:130C xor ax,ax
+06B0:130E 
+-; DEFINE PRIMITIVE
+-a 1400
+06B0:1400 db 6,"branch"
+06B0:1407 ; XT BRANCH
+06B0:1407 add si, [si]
+06B0:1409 lodsw
+06B0:140A jmp ax
+06B0:140C 
+-; DEFINE PRIMITIVE
+-a 1500
+06B0:1500 db 7,"branch0"
+06B0:1508 ; XT BRANCH0
+06B0:1508 pop ax
+06B0:1509 test ax, ax
+06B0:150B jz 1407       ; code_branch
+06B0:150F lodsw         ; SKIP THE ADDRESS 
+06B0:1510 lodsw
+06B0:1511 jmp ax
+06B0:1513 
+-; DEFINE PRIMITIVE
+-a 1600
+06B0:1600 db 6,"invert"
+06B0:1607 ; XT INVERT
+06B0:1607 pop ax
+06B0:1608 not ax        ; each 1 is set to 0, and each 0 is set to 1
+06B0:160A push ax
+06B0:160B lodsw
+06B0:160C jmp ax
+06B0:160E 
+-; DEFINE PRIMITIVE
+-a 1700
+06B0:1700 db 4,"exec"
+06B0:1705 ; XT EXEC
+06B0:1705 pop ax
+06B0:1706 jmp ax
+06B0:1708 
+-; DEFINE PRIMITIVE
+-a 1800
+06B0:1800 db 4,"halt"
+06B0:1805 ; XT halt
+06B0:1805 int 3
+06B0:1806 lodsw
+06B0:1807 jmp ax
+06B0:1809 
+-; DEFINE PRIMITIVE
+-a 1900
+06B0:1900 db 1,"@"
+06B0:1902 ; XT @
+06B0:1902 pop bx
+06B0:1903 mov ax, [bx]
+06B0:1905 push ax
+06B0:1906 lodsw
+06B0:1907 jmp ax
+06B0:1909 
+-; DEFINE PRIMITIVE
+-a 1A00
+06B0:1A00 db 1,"!"
+06B0:1A02 ; XT !
+06B0:1A02 pop di
+06B0:1A03 pop ax
+06B0:1A04 stosw
+06B0:1A05 lodsw
+06B0:1A06 jmp ax
+06B0:1A08 
+-; DEFINE PRIMITIVE
+-a 1B00
+06B0:1B00 db 1,","
+06B0:1B02 ; XT ,
+06B0:1B02 mov di, 304          ; 304 = var_here
+06B0:1B05 pop ax               ; number to be written
+06B0:1B06 mov bx, [di]         ; bx = here
+06B0:1B08 mov [bx], ax         ; write out to here
+06B0:1B0A add bx, 2            ; advance here
+06B0:1B0D mov [di], bx
+06B0:1B0F lodsw
+06B0:1B10 jmp ax
+06B0:1B12 
+-; DEFINE PRIMITIVE
+-a 1C00
+06B0:1C00 db 4,"word"
+06B0:1C05 ; XT WORD
+06B0:1C05 mov ah, [0243]      ; actual input length
+06B0:1C09 mov al, [0240]      ; input index
+06B0:1C0C cmp al, ah          ; check if buffer is fully processed
+06B0:1C0E jb  1C3D            ; @process_buffer
+06B0:1C10 xor al, al
+06B0:1C12 mov [0240], al      ; reset input index
+06B0:1C15 mov [0243], al      ; reset result length for DOS
+06B0:1C18 mov dx, 0A          ; write lf
+06B0:1C1B mov ah, 2           ; write lf
+06B0:1C1D int 21              ; write lf
+06B0:1C1F mov dx, 0D          ; write cr
+06B0:1C22 mov ah, 2           ; write cr
+06B0:1C24 int 21              ; write cr
+06B0:1C26 mov ah, 0A          ; STDIN read
+06B0:1C28 mov dx, 0242        ; input buffer, 1st byte=buffer size, 2nd length of the string
+06B0:1C2B int 21              ; read line from STDIN
+06B0:1C2D ; move cursor
+06B0:1C2D xor bx, bx
+06B0:1C2F mov ah, 3
+06B0:1C31 int 10
+06B0:1C33 mov ah, 2
+06B0:1C35 mov dl, [243]
+06B0:1C39 inc dl
+06B0:1C3B int 10
+06B0:1C3D ; end of move cursor
+06B0:1C3D ;@process_buffer:
+06B0:1C3D push si
+06B0:1C3E mov  si, 0244       ; input buffer+2, contains the string
+06B0:1C41 xor  ah, ah
+06B0:1C43 mov  al, [0240]     ; input index
+06B0:1C46 add  si, ax         ;
+06B0:1C48 mov  bx, 00BC       ; input buffer size - 190-2=188
+06B0:1C4B cmp  ax, bx
+06B0:1C4D jae  1C89           ; @word_end_of_input
+06B0:1C4F ;@word_trim:
+06B0:1C4F lodsb               ; get next char
+06B0:1C50 inc byte [0240]     ; advance input index
+06B0:1C54 cmp al, 20          ; space
+06B0:1C56 je 1C4F             ;@word_trim
+06B0:1C58 cmp al, 0A          ; lf
+06B0:1C5A je 1C4F             ;@word_trim
+06B0:1C5C cmp al, 0D          ; cr
+06B0:1C5E je 1C4F             ;@word_trim
+06B0:1C60 cmp al, 9           ; tab
+06B0:1C62 je 1C4F             ;@word_trim            
+06B0:1C64 lea bx, [si-1]      ; index of the word start
+06B0:1C67 ;@word_next_char:
+06B0:1C67 lodsb               ; next char
+06B0:1C68 inc byte [0240]     ; advance input index
+06B0:1C6C cmp al, 20          ; space
+06B0:1C6E je 1C7E             ;@word_boundary
+06B0:1C70 cmp al, 0A          ; lf
+06B0:1C72 je 1C7E             ;@word_boundary
+06B0:1C74 cmp al, 0D          ; cr
+06B0:1C76 je 1C7E             ;@word_boundary
+06B0:1C78 cmp al, 9           ; tab
+06B0:1C7A je  1C7E            ;@word_boundary        
+06B0:1C7C jmp 1C67            ;@word_next_char
+06B0:1C7E ;@word_boundary:    
+06B0:1C7E sub  si, bx         ; si points to word end  
+06B0:1C80 mov  di, si         ; calculate length
+06B0:1C82 dec  di             ; di = length of word
+06B0:1C83 pop  si             ; restore original si
+06B0:1C84 push di             ; length of word
+06B0:1C85 push bx             ; address of the word start
+06B0:1C86 lodsw               ; NEXT
+06B0:1C87 jmp ax
+06B0:1C89 ;@word_end_of_input:
+06B0:1C89 pop  si             ; restore original si
+06B0:1C8A push 0              ; 0 = no word
+06B0:1C8C lodsw               ; NEXT
+06B0:1C8D jmp ax
+06B0:1C8F 
+-; DEFINE PRIMITIVE
+-a 1D00
+06B0:1D00 db 4,"find"
+06B0:1D05 ; XT FIND            ; ( len adr -- IM? XT TRUE | adr len FALSE )
+06B0:1D05 pop  dx              ; word to be found in dictionary
+06B0:1D06 pop  ax              ; length of the word
+06B0:1D07 push si              ; save Forth IP
+06B0:1D08 mov  bx, [306]       ; last dictionary entriy is defined 
+06B0:1D0C ;@find_loop:
+06B0:1D0C cmp  bx, 1000        ; first dictionary entry is defined at 1000h
+06B0:1D10 jb   1D2A            ; @not_found
+06B0:1D12 mov  cl, [bx]        ; lenght + imm. bit of word in dictionary
+06B0:1D14 and  cx, 7F          ; clear the immediate bit
+06B0:1D17 cmp  ax, cx          ; check length
+06B0:1D19 jnz  1D24            ; @try_next_word
+06B0:1D1B lea  si, [bx + 1]    ; name start
+06B0:1D1E mov  di, dx
+06B0:1D20 repz cmpsb
+06B0:1D22 je   1D32            ; @found
+06B0:1D24 ;@try_next_word:
+06B0:1D24 sub  bx, 100         ; step back to previous dictionary entry
+06B0:1D28 jmp  1D0C            ; @find_loop
+06B0:1D2A ;@not_found:
+06B0:1D2A pop  si              ; restore FORTH IP
+06B0:1D2B push dx              ; word
+06B0:1D2C push ax              ; len
+06B0:1D2D push  0              ; NOT FOUND - FALSE
+06B0:1D2F lodsw                ; NEXT
+06B0:1D30 jmp  ax
+06B0:1D32 ;@found:
+06B0:1D32 pop  si              ; restore FORTH IP
+06B0:1D33 mov  ch, [bx]        ; length + imm. bit
+06B0:1D35 sar  cx, 15          ; get the imm. bit
+06B0:1D38 push cx              
+06B0:1D39 add  bx, ax          ; advance with length
+06B0:1D3B inc  bx
+06B0:1D3C push bx              ; XT of the word
+06B0:1D3D mov  ax, FFFF
+06B0:1D40 push ax            ; FOUND - TRUE
+06B0:1D41 lodsw                ; NEXT
+06B0:1D42 jmp  ax
+06B0:1D44 
+-; DEFINE PRIMITIVE
+-a 1E00
+06B0:1E00 db 4,">num"
+06B0:1E05 ; xt >num               ; ( -- num TRUE|FALSE )
+06B0:1E05 pop  bx                 ; length
+06B0:1E06 pop  di                 ; string
+06B0:1E07 xor  cx, cx             ; result
+06B0:1E09 push si                 ; save FORTH IP
+06B0:1E0A mov  si, 1
+06B0:1E0D ;@tonum_loop:
+06B0:1E0D xor  ax, ax
+06B0:1E0F mov  al, [di + bx -1]  ; last digit
+06B0:1E12 cmp  al, 30            ; character '0'
+06B0:1E14 jb   1E35              ; @tonum_nan
+06B0:1E16 cmp  al, 39            ; character '9'
+06B0:1E18 ja   1E35              ; @tonum_nan
+06B0:1E1A sub  al, 30            ; numeric value
+06B0:1E1C mul  si                ; 
+06B0:1E1E add  cx, ax            ; accumulate result
+06B0:1E20 mov  ax, si
+06B0:1E22 mov  dx, 0A            ; next power of 10
+06B0:1E25 mul  dx
+06B0:1E27 mov  si, ax
+06B0:1E29 dec  bx
+06B0:1E2A jnz  1E0D              ; @tonum_loop
+06B0:1E2C pop  si
+06B0:1E2D push cx
+06B0:1E2E mov  ax, FFFF
+06B0:1E31 push ax                ; TRUE
+06B0:1E32 lodsw                  ; NEXT
+06B0:1E33 jmp  ax
+06B0:1E35 ;@tonum_nan:    
+06B0:1E35 pop  si
+06B0:1E36 push cx
+06B0:1E37 push 0    
+06B0:1E39 lodsw                  ; NEXT
+06B0:1E3A jmp  ax
+06B0:1E3C 
+-; DEFINE PRIMITIVE
+-a 1F00
+06B0:1F00 db 5,"mkhdr"
+06B0:1F06 ; ( len a -- )
+06B0:1F06 pop  bx         ; word
+06B0:1F07 pop  cx         ; len
+06B0:1F08 push si       
+06B0:1F09 mov  si, bx     ; word
+06B0:1F0B mov  bx, 306    ; lastword@
+06B0:1F0E mov  di, [bx]
+06B0:1F10 add  di, 100    ; advance lastword
+06B0:1F14 mov  [bx], di
+06B0:1F16 mov  al, cl     ; store length of word
+06B0:1F18 stosb
+06B0:1F19 rep  movsb      ; copy word name
+06B0:1F1B mov  bx, 304    ; advance dp/here
+06B0:1F1E mov  [bx], di   ; 
+06B0:1F20 pop  si
+06B0:1F21 lodsw
+06B0:1F22 jmp  ax
+06B0:1F24 
+-; DEFINE WORD - immediate
+-a 2000
+06B0:2000 db 81,";"
+06B0:2002 nop
+06B0:2003 mov bx, 400 ; ENTER WORD
+06B0:2006 jmp bx
+06B0:2008 ; LIT    0  LIT   STATE !
+06B0:2008 dw 1104, 0, 1104, 0302, 1A02
+06B0:2012 ; LIT    exit   ,
+06B0:2012 dw 1104, 2105,  1B02
+06B0:2018 ; EXIT
+06B0:2018 dw 2105
+06B0:201A 
+-; DEFINE PRIMITIVE
+-a 2100
+06B0:2100 db 4,"exit"
+06B0:2105 sub bp, 2
+06B0:2108 mov si, [bp]
+06B0:210B lodsw
+06B0:210C jmp ax
+06B0:210E 
+-; DEFINE WORD
+-a 2200
+06B0:2200 db 1,":"
+06B0:2202 nop
+06B0:2203 mov bx, 400
+06B0:2206 jmp bx
+06B0:2208 ;  WORD  MKHDR
+06B0:2208 dw 1C05, 1F06
+06B0:220C dw 1104, BB90, 1B02
+06B0:2212 dw 1104, 0400, 1B02
+06B0:2218 ; jmp bx
+06B0:2218 dw 1104, E3FF, 1B02
+06B0:221E ; LIT    1  LIT   STATE !
+06B0:221E dw 1104, 1, 1104, 0302, 1A02
+06B0:2228 ; EXIT
+06B0:2228 dw 2105
+06B0:222A 
+-; DEFINE PRIMITIVE
+-a 2300
+06B0:2300 db 9,"immediate"
+06B0:230A mov di, [306] ; LAST_WORD
+06B0:230E mov al, [di]
+06B0:2310 or al,  80
+06B0:2312 stosb
+06B0:2313 lodsw
+06B0:2314 jmp ax
+06B0:2316 
+-; DEFINE PRIMITIVE
+-a 2400
+06B0:2400 db 4,"here"
+06B0:2405 mov di, 304 ; here
+06B0:2408 mov ax, [di]
+06B0:240A push ax
+06B0:240B lodsw
+06B0:240C jmp ax
+06B0:240E 
+-a 2500
+06B0:2500 db 1,"-"
+06B0:2502 ; XT -
+06B0:2502 pop bx
+06B0:2503 pop ax
+06B0:2504 sub ax, bx
+06B0:2506 push ax
+06B0:2507 lodsw
+06B0:2508 jmp ax
+06B0:250A 
+-a 2600
+06B0:2600 db 3,"dup"
+06B0:2604 ; XT DUP
+06B0:2604 mov bx, sp
+06B0:2606 mov ax, [bx]
+06B0:2608 push ax
+06B0:2609 lodsw
+06B0:260A jmp ax
+06B0:260C 
+-a 2700
+06B0:2700 db 3,"rot"
+06B0:2704 ; XT ROT
+06B0:2704 pop cx
+06B0:2705 pop bx
+06B0:2706 pop ax
+06B0:2707 push bx
+06B0:2708 push cx
+06B0:2709 push ax
+06B0:270A lodsw
+06B0:270B jmp ax
+06B0:270D 
+-a 2800
+06B0:2800 db 1,"<"
+06B0:2802 ; XT <
+06B0:2802 xor ax, ax
+06B0:2804 pop bx
+06B0:2805 pop dx
+06B0:2806 cmp dx, bx
+06B0:2808 jnl 280D      ;@not_less
+06B0:280A mov ax, FFFF
+06B0:280D ;@not_less:
+06B0:280D push ax    
+06B0:280E lodsw
+06B0:280F jmp ax
+06B0:2811 
+-a 2900
+06B0:2900 db 4,"/mod"
+06B0:2905 ; XT /mod
+06B0:2905 pop bx
+06B0:2906 pop ax
+06B0:2907 xor dx, dx
+06B0:2909 cdq
+06B0:290B idiv bx
+06B0:290D push dx
+06B0:290E push ax
+06B0:290F lodsw
+06B0:2910 jmp  ax
+06B0:2912 
+-a 2A00
+06B0:2A00 db 4,"drop"
+06B0:2A05 ; XT drop
+06B0:2A05 pop  ax
+06B0:2A06 lodsw
+06B0:2A07 jmp ax
+06B0:2A09 
+-a 2B00
+06B0:2B00 db 1,"*"
+06B0:2B02 ; XT *
+06B0:2B02 pop ax
+06B0:2B03 pop bx
+06B0:2B04 imul bx
+06B0:2B06 push ax
+06B0:2B07 lodsw
+06B0:2B08 jmp ax
+06B0:2B0A 
+-a 2C00
+06B0:2C00 db 1,"+"
+06B0:2C02 ; XT +
+06B0:2C02 pop ax
+06B0:2C03 pop bx
+06B0:2C04 add ax, bx
+06B0:2C06 push ax
+06B0:2C07 lodsw
+06B0:2C08 jmp ax
+06B0:2C0A 
+-a 2D00
+06B0:2D00 db 2,"or"
+06B0:2D03 ; XT or
+06B0:2D03 pop ax
+06B0:2D04 pop bx
+06B0:2D05 or ax, bx
+06B0:2D07 push ax
+06B0:2D08 lodsw
+06B0:2D09 jmp ax
+06B0:2D0B 
+-a 2E00
+06B0:2E00 db 3,"and"
+06B0:2E04 ; XT and
+06B0:2E04 pop ax
+06B0:2E05 pop bx
+06B0:2E06 and ax, bx
+06B0:2E08 push ax
+06B0:2E09 lodsw
+06B0:2E0A jmp ax
+06B0:2E0C 
+-a 2F00
+06B0:2F00 db 5,"depth"
+06B0:2F06 ; XT depth
+06B0:2F06 mov ax, 200
+06B0:2F09 mov bx, sp
+06B0:2F0B sub ax, bx
+06B0:2F0D push ax
+06B0:2F0E lodsw
+06B0:2F0F jmp ax
+06B0:2F11 
+-
