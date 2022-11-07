@@ -1,4 +1,5 @@
 -; ARMAGEDDON FORTH in DEBUG.COM
+-; TODO: neg num, depth
 -n forth.com
 -rcx FFFF
 -a 100 
@@ -13,14 +14,8 @@
 06B0:0111 lodsw       ; NEXT
 06B0:0112 jmp ax
 06B0:0114 
--; TODOs negative number, DEPTH, if then utan
--
--; DATA STACK GOES DOWN to 0
--a 200
-06B0:0200 
--; RETURN STACK 2x16b - ADDR=220h - GOES UP
--dw 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-       ^ Error
+-; DATA STACK GOES DOWN to 0 - ADDR=200h
+-; RETURN STACK 2x16b GOES UP - ADDR=220h
 -
 -a 240
 06B0:0240 ; INPUT_INDEX
@@ -82,7 +77,7 @@
 06B0:0522   ;  BRANCH @loop
 06B0:0522   dw 1407,  ffdc
 06B0:0526 ;@unknown:
-06B0:0526   ; >NUM                           ; ( num bool )
+06B0:0526   ; >NUM                           ; ( num TRUE | FALSE )
 06B0:0526   dw 1E05
 06B0:0528   ;  BRANCH0 @NaN  
 06B0:0528   dw 1508,   18  
@@ -342,7 +337,7 @@
 -; DEFINE PRIMITIVE
 -a 1E00
 06B0:1E00 db 4,">num"
-06B0:1E05 ; xt >num               ; ( -- num TRUE|FALSE )
+06B0:1E05 ; xt >num               ; ( a len -- num TRUE | FALSE )
 06B0:1E05 pop  bx                 ; length
 06B0:1E06 pop  di                 ; string
 06B0:1E07 xor  cx, cx             ; result
@@ -372,11 +367,10 @@
 06B0:1E33 jmp  ax
 06B0:1E35 ;@tonum_nan:    
 06B0:1E35 pop  si
-06B0:1E36 push cx
-06B0:1E37 push 0    
-06B0:1E39 lodsw                  ; NEXT
-06B0:1E3A jmp  ax
-06B0:1E3C 
+06B0:1E36 push 0    
+06B0:1E38 lodsw                  ; NEXT
+06B0:1E39 jmp  ax
+06B0:1E3B 
 -; DEFINE PRIMITIVE
 -a 1F00
 06B0:1F00 db 5,"mkhdr"
@@ -566,8 +560,9 @@
 06B0:2F06 mov ax, 200
 06B0:2F09 mov bx, sp
 06B0:2F0B sub ax, bx
-06B0:2F0D push ax
-06B0:2F0E lodsw
-06B0:2F0F jmp ax
-06B0:2F11 
+06B0:2F0D shr ax, 1
+06B0:2F0F push ax
+06B0:2F10 lodsw
+06B0:2F11 jmp ax
+06B0:2F13 
 -

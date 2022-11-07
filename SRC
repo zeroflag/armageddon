@@ -1,4 +1,5 @@
 ; ARMAGEDDON FORTH in DEBUG.COM
+; TODO: neg num, depth
 n forth.com
 rcx FFFF
 a 100 
@@ -13,13 +14,8 @@ mov si, 500 ; SET IP TO @TXT_INTERPRETER
 lodsw       ; NEXT
 jmp ax
 
-; TODOs negative number, DEPTH, if then utan
-
-; DATA STACK GOES DOWN to 0
-a 200
-
-; RETURN STACK 2x16b - ADDR=220h - GOES UP
-dw 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+; DATA STACK GOES DOWN to 0 - ADDR=200h
+; RETURN STACK 2x16b GOES UP - ADDR=220h
 
 a 240
 ; INPUT_INDEX
@@ -81,7 +77,7 @@ a 500
   ;  BRANCH @loop
   dw 1407,  ffdc
 ;@unknown:
-  ; >NUM                           ; ( num bool )
+  ; >NUM                           ; ( num TRUE | FALSE )
   dw 1E05
   ;  BRANCH0 @NaN  
   dw 1508,   18  
@@ -341,7 +337,7 @@ jmp  ax
 ; DEFINE PRIMITIVE
 a 1E00
 db 4,">num"
-; xt >num               ; ( -- num TRUE|FALSE )
+; xt >num               ; ( a len -- num TRUE | FALSE )
 pop  bx                 ; length
 pop  di                 ; string
 xor  cx, cx             ; result
@@ -371,7 +367,6 @@ lodsw                  ; NEXT
 jmp  ax
 ;@tonum_nan:    
 pop  si
-push cx
 push 0    
 lodsw                  ; NEXT
 jmp  ax
@@ -565,6 +560,7 @@ db 5,"depth"
 mov ax, 200
 mov bx, sp
 sub ax, bx
+shr ax, 1
 push ax
 lodsw
 jmp ax
