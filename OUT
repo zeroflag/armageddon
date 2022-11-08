@@ -1,5 +1,5 @@
 -; ARMAGEDDON FORTH in DEBUG.COM
--; TODO: neg num, depth=>SPACE BUG
+-; TODO: neg num
 -n forth.com
 -rcx FFFF
 -a 100 
@@ -42,10 +42,10 @@
 06B0:0350 db "Welcome to Armageddon v0.001","$"
 06B0:036D 
 -a 400
-06B0:0400 ; DOCOLON - ADDR=400h
+06B0:0400 ; ENTER WORD - ADDR=400h
 06B0:0400 mov [bp], si
 06B0:0403 add bp, 2
-06B0:0406 add ax, 6  ; skip JMP DOCOL TODO van benne egy nop
+06B0:0406 add ax, 6  ; skip "JMP 400" there is a nop as well
 06B0:0409 mov si, ax ; mov IP to the next instruction after JMP DOCOL
 06B0:040B lodsw
 06B0:040C jmp ax
