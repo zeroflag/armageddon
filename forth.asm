@@ -1,5 +1,5 @@
 ; ARMAGEDDON FORTH in DEBUG.COM
-; TODO: neg num, depth
+; TODO: neg num, depth=>SPACE BUG
 n forth.com
 rcx FFFF
 a 100 
@@ -53,7 +53,7 @@ jmp ax
 a 500
 ; TEXT_INTERPRETER - ADDR=500h
 ;@loop:
-  ;  WORD                          ; ( -- len a )   
+  ;  WORD                          ; ( -- len a | 0 )   
   dw 1C05
   ;  FIND                          ; ( len a -- IM? XT TRUE | a len FALSE )
   dw 1D05
@@ -217,12 +217,14 @@ jmp ax
 
 ; DEFINE PRIMITIVE
 a 1C00
-db 4,"word"
-; XT WORD
+db 4,"word"         
+; XT WORD           ; ( -- a len | 0 FALSE )
+push si             ; save FORTH IP
+;@getinput
 mov ah, [0243]      ; actual input length
 mov al, [0240]      ; input index
 cmp al, ah          ; check if buffer is fully processed
-jb  1C3D            ; @process_buffer
+jb  1C3E            ; @process_buffer
 xor al, al
 mov [0240], al      ; reset input index
 mov [0243], al      ; reset result length for DOS
@@ -232,7 +234,7 @@ int 21              ; write lf
 mov dx, 0D          ; write cr
 mov ah, 2           ; write cr
 int 21              ; write cr
-mov ah, 0A          ; STDIN read
+mov ah, 0A          ; STDIN read; str is terminated by CR (0Dh)
 mov dx, 0242        ; input buffer, 1st byte=buffer size, 2nd length of the string
 int 21              ; read line from STDIN
 ; move cursor
@@ -245,38 +247,35 @@ inc dl
 int 10
 ; end of move cursor
 ;@process_buffer:
-push si
 mov  si, 0244       ; input buffer+2, contains the string
 xor  ah, ah
 mov  al, [0240]     ; input index
 add  si, ax         ;
 mov  bx, 00BC       ; input buffer size - 190-2=188
-cmp  ax, bx
-jae  1C89           ; @word_end_of_input
 ;@word_trim:
 lodsb               ; get next char
 inc byte [0240]     ; advance input index
 cmp al, 20          ; space
-je 1C4F             ;@word_trim
+je 1C4B             ;@word_trim
 cmp al, 0A          ; lf
-je 1C4F             ;@word_trim
-cmp al, 0D          ; cr
-je 1C4F             ;@word_trim
+je 1C4B             ;@word_trim
+cmp al, 0D        ; cr  - str is always terminated by CR (see int 21 ah=0A)
+je 1C06             ;@getinput - if the user entered only whitespaces
 cmp al, 9           ; tab
-je 1C4F             ;@word_trim            
+je 1C4B             ;@word_trim            
 lea bx, [si-1]      ; index of the word start
 ;@word_next_char:
 lodsb               ; next char
 inc byte [0240]     ; advance input index
 cmp al, 20          ; space
-je 1C7E             ;@word_boundary
+je 1C7A             ;@word_boundary
 cmp al, 0A          ; lf
-je 1C7E             ;@word_boundary
+je 1C7A             ;@word_boundary
 cmp al, 0D          ; cr
-je 1C7E             ;@word_boundary
+je 1C7A             ;@word_boundary
 cmp al, 9           ; tab
-je  1C7E            ;@word_boundary        
-jmp 1C67            ;@word_next_char
+je  1C7A            ;@word_boundary        
+jmp 1C63            ;@word_next_char
 ;@word_boundary:    
 sub  si, bx         ; si points to word end  
 mov  di, si         ; calculate length
@@ -284,11 +283,6 @@ dec  di             ; di = length of word
 pop  si             ; restore original si
 push di             ; length of word
 push bx             ; address of the word start
-lodsw               ; NEXT
-jmp ax
-;@word_end_of_input:
-pop  si             ; restore original si
-push 0              ; 0 = no word
 lodsw               ; NEXT
 jmp ax
 

@@ -1,5 +1,5 @@
 -; ARMAGEDDON FORTH in DEBUG.COM
--; TODO: neg num, depth
+-; TODO: neg num, depth=>SPACE BUG
 -n forth.com
 -rcx FFFF
 -a 100 
@@ -53,7 +53,7 @@
 -a 500
 06B0:0500 ; TEXT_INTERPRETER - ADDR=500h
 06B0:0500 ;@loop:
-06B0:0500   ;  WORD                          ; ( -- len a )   
+06B0:0500   ;  WORD                          ; ( -- len a | 0 )   
 06B0:0500   dw 1C05
 06B0:0502   ;  FIND                          ; ( len a -- IM? XT TRUE | a len FALSE )
 06B0:0502   dw 1D05
@@ -217,81 +217,75 @@
 06B0:1B12 
 -; DEFINE PRIMITIVE
 -a 1C00
-06B0:1C00 db 4,"word"
-06B0:1C05 ; XT WORD
-06B0:1C05 mov ah, [0243]      ; actual input length
-06B0:1C09 mov al, [0240]      ; input index
-06B0:1C0C cmp al, ah          ; check if buffer is fully processed
-06B0:1C0E jb  1C3D            ; @process_buffer
-06B0:1C10 xor al, al
-06B0:1C12 mov [0240], al      ; reset input index
-06B0:1C15 mov [0243], al      ; reset result length for DOS
-06B0:1C18 mov dx, 0A          ; write lf
-06B0:1C1B mov ah, 2           ; write lf
-06B0:1C1D int 21              ; write lf
-06B0:1C1F mov dx, 0D          ; write cr
-06B0:1C22 mov ah, 2           ; write cr
-06B0:1C24 int 21              ; write cr
-06B0:1C26 mov ah, 0A          ; STDIN read
-06B0:1C28 mov dx, 0242        ; input buffer, 1st byte=buffer size, 2nd length of the string
-06B0:1C2B int 21              ; read line from STDIN
-06B0:1C2D ; move cursor
-06B0:1C2D xor bx, bx
-06B0:1C2F mov ah, 3
-06B0:1C31 int 10
-06B0:1C33 mov ah, 2
-06B0:1C35 mov dl, [243]
-06B0:1C39 inc dl
-06B0:1C3B int 10
-06B0:1C3D ; end of move cursor
-06B0:1C3D ;@process_buffer:
-06B0:1C3D push si
+06B0:1C00 db 4,"word"         
+06B0:1C05 ; XT WORD           ; ( -- a len | 0 FALSE )
+06B0:1C05 push si             ; save FORTH IP
+06B0:1C06 ;@getinput
+06B0:1C06 mov ah, [0243]      ; actual input length
+06B0:1C0A mov al, [0240]      ; input index
+06B0:1C0D cmp al, ah          ; check if buffer is fully processed
+06B0:1C0F jb  1C3E            ; @process_buffer
+06B0:1C11 xor al, al
+06B0:1C13 mov [0240], al      ; reset input index
+06B0:1C16 mov [0243], al      ; reset result length for DOS
+06B0:1C19 mov dx, 0A          ; write lf
+06B0:1C1C mov ah, 2           ; write lf
+06B0:1C1E int 21              ; write lf
+06B0:1C20 mov dx, 0D          ; write cr
+06B0:1C23 mov ah, 2           ; write cr
+06B0:1C25 int 21              ; write cr
+06B0:1C27 mov ah, 0A          ; STDIN read; str is terminated by CR (0Dh)
+06B0:1C29 mov dx, 0242        ; input buffer, 1st byte=buffer size, 2nd length of the string
+06B0:1C2C int 21              ; read line from STDIN
+06B0:1C2E ; move cursor
+06B0:1C2E xor bx, bx
+06B0:1C30 mov ah, 3
+06B0:1C32 int 10
+06B0:1C34 mov ah, 2
+06B0:1C36 mov dl, [243]
+06B0:1C3A inc dl
+06B0:1C3C int 10
+06B0:1C3E ; end of move cursor
+06B0:1C3E ;@process_buffer:
 06B0:1C3E mov  si, 0244       ; input buffer+2, contains the string
 06B0:1C41 xor  ah, ah
 06B0:1C43 mov  al, [0240]     ; input index
 06B0:1C46 add  si, ax         ;
 06B0:1C48 mov  bx, 00BC       ; input buffer size - 190-2=188
-06B0:1C4B cmp  ax, bx
-06B0:1C4D jae  1C89           ; @word_end_of_input
-06B0:1C4F ;@word_trim:
-06B0:1C4F lodsb               ; get next char
-06B0:1C50 inc byte [0240]     ; advance input index
-06B0:1C54 cmp al, 20          ; space
-06B0:1C56 je 1C4F             ;@word_trim
-06B0:1C58 cmp al, 0A          ; lf
-06B0:1C5A je 1C4F             ;@word_trim
-06B0:1C5C cmp al, 0D          ; cr
-06B0:1C5E je 1C4F             ;@word_trim
-06B0:1C60 cmp al, 9           ; tab
-06B0:1C62 je 1C4F             ;@word_trim            
-06B0:1C64 lea bx, [si-1]      ; index of the word start
-06B0:1C67 ;@word_next_char:
-06B0:1C67 lodsb               ; next char
-06B0:1C68 inc byte [0240]     ; advance input index
-06B0:1C6C cmp al, 20          ; space
-06B0:1C6E je 1C7E             ;@word_boundary
-06B0:1C70 cmp al, 0A          ; lf
-06B0:1C72 je 1C7E             ;@word_boundary
-06B0:1C74 cmp al, 0D          ; cr
-06B0:1C76 je 1C7E             ;@word_boundary
-06B0:1C78 cmp al, 9           ; tab
-06B0:1C7A je  1C7E            ;@word_boundary        
-06B0:1C7C jmp 1C67            ;@word_next_char
-06B0:1C7E ;@word_boundary:    
-06B0:1C7E sub  si, bx         ; si points to word end  
-06B0:1C80 mov  di, si         ; calculate length
-06B0:1C82 dec  di             ; di = length of word
-06B0:1C83 pop  si             ; restore original si
-06B0:1C84 push di             ; length of word
-06B0:1C85 push bx             ; address of the word start
-06B0:1C86 lodsw               ; NEXT
-06B0:1C87 jmp ax
-06B0:1C89 ;@word_end_of_input:
-06B0:1C89 pop  si             ; restore original si
-06B0:1C8A push 0              ; 0 = no word
-06B0:1C8C lodsw               ; NEXT
-06B0:1C8D jmp ax
-06B0:1C8F 
+06B0:1C4B ;@word_trim:
+06B0:1C4B lodsb               ; get next char
+06B0:1C4C inc byte [0240]     ; advance input index
+06B0:1C50 cmp al, 20          ; space
+06B0:1C52 je 1C4B             ;@word_trim
+06B0:1C54 cmp al, 0A          ; lf
+06B0:1C56 je 1C4B             ;@word_trim
+06B0:1C58 cmp al, 0D        ; cr  - str is always terminated by CR (see int 21 ah=0A)
+06B0:1C5A je 1C06             ;@getinput - if the user entered only whitespaces
+06B0:1C5C cmp al, 9           ; tab
+06B0:1C5E je 1C4B             ;@word_trim            
+06B0:1C60 lea bx, [si-1]      ; index of the word start
+06B0:1C63 ;@word_next_char:
+06B0:1C63 lodsb               ; next char
+06B0:1C64 inc byte [0240]     ; advance input index
+06B0:1C68 cmp al, 20          ; space
+06B0:1C6A je 1C7A             ;@word_boundary
+06B0:1C6C cmp al, 0A          ; lf
+06B0:1C6E je 1C7A             ;@word_boundary
+06B0:1C70 cmp al, 0D          ; cr
+06B0:1C72 je 1C7A             ;@word_boundary
+06B0:1C74 cmp al, 9           ; tab
+06B0:1C76 je  1C7A            ;@word_boundary        
+06B0:1C78 jmp 1C63            ;@word_next_char
+06B0:1C7A ;@word_boundary:    
+06B0:1C7A sub  si, bx         ; si points to word end  
+06B0:1C7C mov  di, si         ; calculate length
+06B0:1C7E dec  di             ; di = length of word
+06B0:1C7F pop  si             ; restore original si
+06B0:1C80 push di             ; length of word
+06B0:1C81 push bx             ; address of the word start
+06B0:1C82 lodsw               ; NEXT
+06B0:1C83 jmp ax
+06B0:1C85 
 -; DEFINE PRIMITIVE
 -a 1D00
 06B0:1D00 db 4,"find"
@@ -565,4 +559,3 @@
 06B0:2F10 lodsw
 06B0:2F11 jmp ax
 06B0:2F13 
--
