@@ -26,7 +26,7 @@ After everything starts working, the next step will be to write a `meta-compiler
  * `make.bat`
  * `forth.com`
  
- The make.bat script builds the project, runs forth.com and loads core.forth. You can start forth.com afterwards, but by default the core.forth file is not loaded.
+ The `make.bat` script builds the project (by redirecting `forth.asm` to `debug.com`'s stdin), runs `forth.com` and loads `core.forth`). You can start `forth.com` afterwards, but by default the `core.forth` file is not loaded.
  You can do that manually by running `forth.com < core.forth`. Unfortunately there must be a `quit` at the end of `core.forth`, so you can't play with it interactivly because the process will exit (without the `quit` the process would hang because of how stdin redirect works in DOS). But you can start `forth.com` alone and type in commands interactivly (this is what I did on the 2nd screenshot).
  
  This thing is in early phase and very incomplete, and possibly buggy. There is no meta-compiler yet, but I want to build one at some point.
