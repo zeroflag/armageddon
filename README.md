@@ -2,7 +2,7 @@
 
 ### Creating a programming language out of nothing i.e. the Zombie Apocalypse Driven Development.
 
-A programming language defined entirely in `DEBUG.COM`.
+#### A programming language defined entirely in `DEBUG.COM`.
 
 Imagine the earth is being destroyed by some virus-infected zombies. Technology is mostly destroyed. You desperately need to find a computer to develop the cure against the virus. You found shelter in an abandoned museum. The only computer available is 16bit IBM AT 80286 with DOS installed on it. There is no programming language interpreter, there is no compiler available on that machine. You found a program called `DEBUG.COM` which is about 10k in size. The whole binary fits into 2-3 QR codes. 
 
