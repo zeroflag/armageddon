@@ -22,6 +22,7 @@ After everything starts working, the next step will be to write a `meta-compiler
  * `git clone git@github.com:zeroflag/armageddon.git`
  * `cd armageddon`
  * Start DosBox and run: `mount c /path/to/armageddon`
+ * `C:`
  * `make.bat`
  * `forth.com`
  
