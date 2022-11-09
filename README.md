@@ -15,3 +15,19 @@ You have no choice but to build a programming language in the debugger by laying
 You start defining a FORTH. You write the [primitieves](forth.asm#L103) and the inner interpreter in assembly, you lay out dictionary structure in the memory. Then you compile the [text interpreter](forth.asm#L55) and the [defining words](forth.asm#416) on paper then you enter each byte one bye one. Then you can write the flow control structures in FORTH. 
 
 After everything starts working, the next step will be to write a meta-compiler and create a new, more powerful FORTH out of the original version.
+
+## Usage
+
+ * Install DOSBox 0.74-3
+ * git clone git@github.com:zeroflag/armageddon.git
+ * cd armageddon
+ * Start DosBox and run: mount c /path/to/armageddon
+ * make.bat
+ * forth.com
+ 
+ The make.bat script builds the project, runs forth.com and loads core.forth 
+ You can start forth.com afterwards but by default the core.forth file is not loaded.
+ You can do that manually by running `forth.com < core.forth`. Unfortunately there must be a quit at the end of core.forth so you can't play interactivly after that becuse the process will exit (without the quit the process would hang because of the way file stdin redirect works in DOS). But you can start forth.com alone and type in commands interactivly.
+ 
+ This thing is heavily under development and it's is very incomplete.
+ 
