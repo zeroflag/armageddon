@@ -1,5 +1,6 @@
 -; ARMAGEDDON FORTH in DEBUG.COM
--; TODO: neg num
+-; A classic DTC Forth defined in DEBUG.COM
+-
 -n forth.com
 -rcx FFFF
 -a 100 
@@ -337,34 +338,39 @@
 06B0:1E07 xor  cx, cx             ; result
 06B0:1E09 push si                 ; save FORTH IP
 06B0:1E0A mov  si, 1
-06B0:1E0D ;@tonum_loop:
-06B0:1E0D xor  ax, ax
-06B0:1E0F mov  al, [di + bx -1]  ; last digit
-06B0:1E12 cmp  al, 30            ; character '0'
-06B0:1E14 jb   1E35              ; @tonum_nan
-06B0:1E16 cmp  al, 39            ; character '9'
-06B0:1E18 ja   1E35              ; @tonum_nan
-06B0:1E1A sub  al, 30            ; numeric value
-06B0:1E1C mul  si                ; 
-06B0:1E1E add  cx, ax            ; accumulate result
-06B0:1E20 mov  ax, si
-06B0:1E22 mov  dx, 0A            ; next power of 10
-06B0:1E25 mul  dx
-06B0:1E27 mov  si, ax
-06B0:1E29 dec  bx
-06B0:1E2A jnz  1E0D              ; @tonum_loop
-06B0:1E2C pop  si
-06B0:1E2D push cx
-06B0:1E2E mov  ax, FFFF
-06B0:1E31 push ax                ; TRUE
-06B0:1E32 lodsw                  ; NEXT
-06B0:1E33 jmp  ax
-06B0:1E35 ;@tonum_nan:    
-06B0:1E35 pop  si
-06B0:1E36 push 0    
-06B0:1E38 lodsw                  ; NEXT
-06B0:1E39 jmp  ax
-06B0:1E3B 
+06B0:1E0D cmp  byte [di], 2d      ; check is negativ
+06B0:1E10 jnz  1E17               ; @tonum_loop
+06B0:1E12 inc  di                 ; skip sign
+06B0:1E13 dec  bx                 ; dec length
+06B0:1E14 mov  si, FFFF           ; -1
+06B0:1E17 ;@tonum_loop:
+06B0:1E17 xor  ax, ax
+06B0:1E19 mov  al, [di + bx -1]  ; last digit
+06B0:1E1C cmp  al, 30            ; character '0'
+06B0:1E1E jb   1E3F              ; @tonum_nan
+06B0:1E20 cmp  al, 39            ; character '9'
+06B0:1E22 ja   1E3F              ; @tonum_nan
+06B0:1E24 sub  al, 30            ; numeric value
+06B0:1E26 mul  si                ; 
+06B0:1E28 add  cx, ax            ; accumulate result
+06B0:1E2A mov  ax, si
+06B0:1E2C mov  dx, 0A            ; next power of 10
+06B0:1E2F mul  dx
+06B0:1E31 mov  si, ax
+06B0:1E33 dec  bx
+06B0:1E34 jnz  1E17              ; @tonum_loop
+06B0:1E36 pop  si
+06B0:1E37 push cx
+06B0:1E38 mov  ax, FFFF
+06B0:1E3B push ax                ; TRUE
+06B0:1E3C lodsw                  ; NEXT
+06B0:1E3D jmp  ax
+06B0:1E3F ;@tonum_nan:    
+06B0:1E3F pop  si
+06B0:1E40 push 0    
+06B0:1E42 lodsw                  ; NEXT
+06B0:1E43 jmp  ax
+06B0:1E45 
 -; DEFINE PRIMITIVE
 -a 1F00
 06B0:1F00 db 5,"mkhdr"

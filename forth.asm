@@ -1,5 +1,6 @@
 ; ARMAGEDDON FORTH in DEBUG.COM
-; TODO: neg num
+; A classic DTC Forth defined in DEBUG.COM
+
 n forth.com
 rcx FFFF
 a 100 
@@ -337,13 +338,18 @@ pop  di                 ; string
 xor  cx, cx             ; result
 push si                 ; save FORTH IP
 mov  si, 1
+cmp  byte [di], 2d      ; check is negativ
+jnz  1E17               ; @tonum_loop
+inc  di                 ; skip sign
+dec  bx                 ; dec length
+mov  si, FFFF           ; -1
 ;@tonum_loop:
 xor  ax, ax
 mov  al, [di + bx -1]  ; last digit
 cmp  al, 30            ; character '0'
-jb   1E35              ; @tonum_nan
+jb   1E3F              ; @tonum_nan
 cmp  al, 39            ; character '9'
-ja   1E35              ; @tonum_nan
+ja   1E3F              ; @tonum_nan
 sub  al, 30            ; numeric value
 mul  si                ; 
 add  cx, ax            ; accumulate result
@@ -352,7 +358,7 @@ mov  dx, 0A            ; next power of 10
 mul  dx
 mov  si, ax
 dec  bx
-jnz  1E0D              ; @tonum_loop
+jnz  1E17              ; @tonum_loop
 pop  si
 push cx
 mov  ax, FFFF
