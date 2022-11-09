@@ -1,6 +1,6 @@
 # Armageddon
 
-### Creating a programming language out of nothing i.e. The Zombie Apocalypse Driven Development.
+### Creating a programming language out of nothing i.e. the Zombie Apocalypse Driven Development.
 
 A programming language defined entirely in DEBUG.COM.
 
