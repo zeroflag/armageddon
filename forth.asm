@@ -37,7 +37,7 @@ dw B00
 
 a 306
 ; LAST_WORD
-dw 2F00
+dw 3000
 
 a 350
 db "Welcome to Armageddon v0.001","$"
@@ -563,5 +563,32 @@ sub ax, bx
 shr ax, 1
 push ax
 lodsw
+jmp ax
+
+; DEFINE PRIMITIVE
+a 3000
+db 3,"key"         
+; XT key           ; ( -- c )
+push si             ; save FORTH IP
+;get next char from the buffer if available
+mov ah, [0243]      ; buffer length
+mov al, [0240]      ; input_index
+cmp al, ah          ; check if buffer is fully processed
+jb  301F            ; @get_from_buffer
+xor al, al          ; if buffer is empty read next line
+mov [0240], al      ; reset input index
+mov [0243], al      ; reset result length for DOS
+mov ah, 0A          ; STDIN read; str is terminated by CR (0Dh)
+mov dx, 0242        ; input buffer, 1st byte=buffer size, 2nd length of the string
+int 21              ; read line from STDIN
+;@get_from_buffer:
+xor  ax, ax
+mov  si, 0244       ; input buffer+2, contains the string
+add  si, [0240]     ; buffer beginning + input_index
+inc  byte [0240]    ; advance input index
+lodsb               ; load next byte
+pop  si             ; restore IP
+push ax
+lodsw               ; NEXT
 jmp ax
 

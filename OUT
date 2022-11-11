@@ -37,7 +37,7 @@
 06B0:0306 
 -a 306
 06B0:0306 ; LAST_WORD
-06B0:0306 dw 2F00
+06B0:0306 dw 3000
 06B0:0308 
 -a 350
 06B0:0350 db "Welcome to Armageddon v0.001","$"
@@ -565,3 +565,30 @@
 06B0:2F10 lodsw
 06B0:2F11 jmp ax
 06B0:2F13 
+-; DEFINE PRIMITIVE
+-a 3000
+06B0:3000 db 3,"key"         
+06B0:3004 ; XT key           ; ( -- c )
+06B0:3004 push si             ; save FORTH IP
+06B0:3005 ;get next char from the buffer if available
+06B0:3005 mov ah, [0243]      ; buffer length
+06B0:3009 mov al, [0240]      ; input_index
+06B0:300C cmp al, ah          ; check if buffer is fully processed
+06B0:300E jb  301F            ; @get_from_buffer
+06B0:3010 xor al, al          ; if buffer is empty read next line
+06B0:3012 mov [0240], al      ; reset input index
+06B0:3015 mov [0243], al      ; reset result length for DOS
+06B0:3018 mov ah, 0A          ; STDIN read; str is terminated by CR (0Dh)
+06B0:301A mov dx, 0242        ; input buffer, 1st byte=buffer size, 2nd length of the string
+06B0:301D int 21              ; read line from STDIN
+06B0:301F ;@get_from_buffer:
+06B0:301F xor  ax, ax
+06B0:3021 mov  si, 0244       ; input buffer+2, contains the string
+06B0:3024 add  si, [0240]     ; buffer beginning + input_index
+06B0:3028 inc  byte [0240]    ; advance input index
+06B0:302C lodsb               ; load next byte
+06B0:302D pop  si             ; restore IP
+06B0:302E push ax
+06B0:302F lodsw               ; NEXT
+06B0:3030 jmp ax
+06B0:3032 
