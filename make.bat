@@ -6,5 +6,10 @@ echo "out generated"
 copy forth.asm src
 echo w 100 >> src
 debug.com < src
+del src
 echo "bin generated"
-forth.com < core.fth
+type core.fth > in.fth
+type test.fth >> in.fth
+echo quit >> in.fth
+forth.com < in.fth
+del in.fth

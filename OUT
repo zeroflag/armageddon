@@ -619,14 +619,13 @@
 06B0:330E 
 -; DEFINE PRIMITIVE
 -a 3400
-06B0:3400 db 4,"crlf"
-06B0:3405 ; XT crlf
-06B0:3405 mov dx, 0A          ; write lf
-06B0:3408 mov ah, 2
-06B0:340A int 21
-06B0:340C mov dx, 0D          ; write cr
-06B0:340F mov ah, 2
-06B0:3411 int 21
-06B0:3413 lodsw
-06B0:3414 jmp ax
-06B0:3416 
+06B0:3400 db 5,"allot"
+06B0:3406 ; XT allot
+06B0:3406 pop  cx
+06B0:3407 mov  di, 304          ; 304 = var_here
+06B0:340A mov  ax, [di]         ; dp
+06B0:340C add  ax, cx           ; advance dp
+06B0:340E stosw
+06B0:340F lodsw
+06B0:3410 jmp ax
+06B0:3412 

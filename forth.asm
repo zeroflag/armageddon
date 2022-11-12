@@ -619,14 +619,13 @@ jmp ax
 
 ; DEFINE PRIMITIVE
 a 3400
-db 4,"crlf"
-; XT crlf
-mov dx, 0A          ; write lf
-mov ah, 2
-int 21
-mov dx, 0D          ; write cr
-mov ah, 2
-int 21
+db 5,"allot"
+; XT allot
+pop  cx
+mov  di, 304          ; 304 = var_here
+mov  ax, [di]         ; dp
+add  ax, cx           ; advance dp
+stosw
 lodsw
 jmp ax
 
