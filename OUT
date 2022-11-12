@@ -23,10 +23,14 @@
 06B0:0240 db 0
 06B0:0241 
 -a 242
-06B0:0242 ; INPUT BUFFER 190b, first byte is the length of the buffer - ADDR=242h
+06B0:0242 ; INPUT BUFFER 80+2 byte long, first byte is the length of the buffer - ADDR=242h
 06B0:0242 ; after reading from STDIN the 2nd byte contains the length of the actual input
-06B0:0242 db BC,0,D,0,0,0,0,0,0,0,0,0,0,0,0,0
-06B0:0252 
+06B0:0242 db 50,0,D
+06B0:0245 
+-a 294
+06B0:0294 ; 80 byte long word name buffer 
+06B0:0294 db D
+06B0:0295 
 -a 302
 06B0:0302 ; STATE
 06B0:0302 db 0 
@@ -37,7 +41,7 @@
 06B0:0306 
 -a 306
 06B0:0306 ; LAST_WORD
-06B0:0306 dw 3000
+06B0:0306 dw 3400
 06B0:0308 
 -a 350
 06B0:0350 db "Welcome to Armageddon v0.001","$"
@@ -54,7 +58,7 @@
 -a 500
 06B0:0500 ; TEXT_INTERPRETER - ADDR=500h
 06B0:0500 ;@loop:
-06B0:0500   ;  WORD                          ; ( -- len a | 0 )   
+06B0:0500   ;  WORD                          ; ( -- len a | 0 )
 06B0:0500   dw 1C05
 06B0:0502   ;  FIND                          ; ( len a -- IM? XT TRUE | a len FALSE )
 06B0:0502   dw 1D05
@@ -70,12 +74,12 @@
 06B0:0516   dw 1508,   08                  
 06B0:051A   ;  ,                             ; compile
 06B0:051A   dw 1B02
-06B0:051C   ;  BRANCH @loop  
+06B0:051C   ;  BRANCH @loop (-30)
 06B0:051C   dw 1407,   ffe2
 06B0:0520 ;@exec:  
 06B0:0520   ;  EXEC
 06B0:0520   dw 1705
-06B0:0522   ;  BRANCH @loop
+06B0:0522   ;  BRANCH @loop (-36)
 06B0:0522   dw 1407,  ffdc
 06B0:0526 ;@unknown:
 06B0:0526   ; >NUM                           ; ( num TRUE | FALSE )
@@ -216,77 +220,54 @@
 06B0:1B0F lodsw
 06B0:1B10 jmp ax
 06B0:1B12 
--; DEFINE PRIMITIVE
+-; DEFINE WORD - immediate
 -a 1C00
-06B0:1C00 db 4,"word"         
-06B0:1C05 ; XT WORD           ; ( -- a len | 0 FALSE )
-06B0:1C05 push si             ; save FORTH IP
-06B0:1C06 ;@getinput
-06B0:1C06 mov ah, [0243]      ; actual input length
-06B0:1C0A mov al, [0240]      ; input index
-06B0:1C0D cmp al, ah          ; check if buffer is fully processed
-06B0:1C0F jb  1C3E            ; @process_buffer
-06B0:1C11 xor al, al
-06B0:1C13 mov [0240], al      ; reset input index
-06B0:1C16 mov [0243], al      ; reset result length for DOS
-06B0:1C19 mov dx, 0A          ; write lf
-06B0:1C1C mov ah, 2           ; write lf
-06B0:1C1E int 21              ; write lf
-06B0:1C20 mov dx, 0D          ; write cr
-06B0:1C23 mov ah, 2           ; write cr
-06B0:1C25 int 21              ; write cr
-06B0:1C27 mov ah, 0A          ; STDIN read; str is terminated by CR (0Dh)
-06B0:1C29 mov dx, 0242        ; input buffer, 1st byte=buffer size, 2nd length of the string
-06B0:1C2C int 21              ; read line from STDIN
-06B0:1C2E ; move cursor
-06B0:1C2E xor bx, bx
-06B0:1C30 mov ah, 3
-06B0:1C32 int 10
-06B0:1C34 mov ah, 2
-06B0:1C36 mov dl, [243]
-06B0:1C3A inc dl
-06B0:1C3C int 10
-06B0:1C3E ; end of move cursor
-06B0:1C3E ;@process_buffer:
-06B0:1C3E mov  si, 0244       ; input buffer+2, contains the string
-06B0:1C41 xor  ah, ah
-06B0:1C43 mov  al, [0240]     ; input index
-06B0:1C46 add  si, ax         ;
-06B0:1C48 mov  bx, 00BC       ; input buffer size - 190-2=188
-06B0:1C4B ;@word_trim:
-06B0:1C4B lodsb               ; get next char
-06B0:1C4C inc byte [0240]     ; advance input index
-06B0:1C50 cmp al, 20          ; space
-06B0:1C52 je 1C4B             ;@word_trim
-06B0:1C54 cmp al, 0A          ; lf
-06B0:1C56 je 1C4B             ;@word_trim
-06B0:1C58 cmp al, 0D        ; cr  - str is always terminated by CR (see int 21 ah=0A)
-06B0:1C5A je 1C06             ;@getinput - if the user entered only whitespaces
-06B0:1C5C cmp al, 9           ; tab
-06B0:1C5E je 1C4B             ;@word_trim            
-06B0:1C60 lea bx, [si-1]      ; index of the word start
-06B0:1C63 ;@word_next_char:
-06B0:1C63 lodsb               ; next char
-06B0:1C64 inc byte [0240]     ; advance input index
-06B0:1C68 cmp al, 20          ; space
-06B0:1C6A je 1C7A             ;@word_boundary
-06B0:1C6C cmp al, 0A          ; lf
-06B0:1C6E je 1C7A             ;@word_boundary
-06B0:1C70 cmp al, 0D          ; cr
-06B0:1C72 je 1C7A             ;@word_boundary
-06B0:1C74 cmp al, 9           ; tab
-06B0:1C76 je  1C7A            ;@word_boundary        
-06B0:1C78 jmp 1C63            ;@word_next_char
-06B0:1C7A ;@word_boundary:    
-06B0:1C7A sub  si, bx         ; si points to word end  
-06B0:1C7C mov  di, si         ; calculate length
-06B0:1C7E dec  di             ; di = length of word
-06B0:1C7F pop  si             ; restore original si
-06B0:1C80 push di             ; length of word
-06B0:1C81 push bx             ; address of the word start
-06B0:1C82 lodsw               ; NEXT
-06B0:1C83 jmp ax
-06B0:1C85 
+06B0:1C00 db 4,"word"
+06B0:1C05 ; XT WORD           ; ( -- len adr )
+06B0:1C05 nop
+06B0:1C06 mov bx, 400 ; ENTER WORD
+06B0:1C09 jmp bx
+06B0:1C0B ;  LIT   0  // future length of the world
+06B0:1C0B dw 1104, 0
+06B0:1C0F ;  LIT   20
+06B0:1C0F dw 1104, 20
+06B0:1C13 ;@word_trim:
+06B0:1C13 ;  DROP     // drop placeholder/whitespace
+06B0:1C13 dw 2A05
+06B0:1C15 ;  KEY
+06B0:1C15 dw 3004
+06B0:1C17 ;  DUP   LIT   20  XOR   BRANCH0 @word_trim (-14) 
+06B0:1C17 dw 2604, 1104, 20, 3104, 1508,  fff2
+06B0:1C23 ;  DUP   LIT   0A  XOR   BRANCH0 @word_trim (-26)
+06B0:1C23 dw 2604, 1104, 0A, 3104, 1508,  ffe6
+06B0:1C2F ;  DUP   LIT   0D  XOR   BRANCH0 @word_trim (-38)
+06B0:1C2F dw 2604, 1104, 0D, 3104, 1508,  ffda
+06B0:1C3B ;  DUP   LIT   09  XOR   BRANCH0 @word_trim (-50)
+06B0:1C3B dw 2604, 1104, 09, 3104, 1508,  ffce
+06B0:1C47 ;@getchar:
+06B0:1C47 ; ( len chr  )
+06B0:1C47 ;  OVER  LIT   wbuf +     c!
+06B0:1C47 dw 3305, 1104, 294, 2C02, 3203
+06B0:1C51 ; LIT    1  + // increse the length
+06B0:1C51 dw 1104, 1, 2C02
+06B0:1C57 ;  KEY
+06B0:1C57 dw 3004
+06B0:1C59 ;  DUP   LIT   20  XOR   BRANCH0 @end_of_word (+42)
+06B0:1C59 dw 2604, 1104, 20, 3104, 1508, 2a
+06B0:1C65 ;  DUP   LIT   0A  XOR   BRANCH0 @end_of_word (+30)
+06B0:1C65 dw 2604, 1104, 0A, 3104, 1508, 1e
+06B0:1C71 ;  DUP   LIT   0D  XOR   BRANCH0 @end_of_word (+18)
+06B0:1C71 dw 2604, 1104, 0D, 3104, 1508, 12
+06B0:1C7D ;  DUP   LIT   09  XOR   BRANCH0 @end_of_word (+6)
+06B0:1C7D dw 2604, 1104, 09, 3104, 1508, 06
+06B0:1C89 ;  BRANCH @getchar (-68)
+06B0:1C89 dw 1407,  ffbc
+06B0:1C8D ;@end_of_word:
+06B0:1C8D ;  DROP  LIT   wbuf
+06B0:1C8D dw 2A05, 1104, 294
+06B0:1C93 ;  exit
+06B0:1C93 dw 2105
+06B0:1C95 
 -; DEFINE PRIMITIVE
 -a 1D00
 06B0:1D00 db 4,"find"
@@ -325,7 +306,7 @@
 06B0:1D3B inc  bx
 06B0:1D3C push bx              ; XT of the word
 06B0:1D3D mov  ax, FFFF
-06B0:1D40 push ax            ; FOUND - TRUE
+06B0:1D40 push ax              ; FOUND - TRUE
 06B0:1D41 lodsw                ; NEXT
 06B0:1D42 jmp  ax
 06B0:1D44 
@@ -574,21 +555,78 @@
 06B0:3005 mov ah, [0243]      ; buffer length
 06B0:3009 mov al, [0240]      ; input_index
 06B0:300C cmp al, ah          ; check if buffer is fully processed
-06B0:300E jb  301F            ; @get_from_buffer
-06B0:3010 xor al, al          ; if buffer is empty read next line
-06B0:3012 mov [0240], al      ; reset input index
-06B0:3015 mov [0243], al      ; reset result length for DOS
-06B0:3018 mov ah, 0A          ; STDIN read; str is terminated by CR (0Dh)
-06B0:301A mov dx, 0242        ; input buffer, 1st byte=buffer size, 2nd length of the string
-06B0:301D int 21              ; read line from STDIN
-06B0:301F ;@get_from_buffer:
-06B0:301F xor  ax, ax
-06B0:3021 mov  si, 0244       ; input buffer+2, contains the string
-06B0:3024 add  si, [0240]     ; buffer beginning + input_index
-06B0:3028 inc  byte [0240]    ; advance input index
-06B0:302C lodsb               ; load next byte
-06B0:302D pop  si             ; restore IP
-06B0:302E push ax
-06B0:302F lodsw               ; NEXT
-06B0:3030 jmp ax
-06B0:3032 
+06B0:300E jbe  303D           ; @get_from_buffer - including the final CR
+06B0:3010 mov dx, 0A          ; write lf
+06B0:3013 mov ah, 2           ; write lf
+06B0:3015 int 21              ; write lf
+06B0:3017 mov dx, 0D          ; write cr
+06B0:301A mov ah, 2           ; write cr
+06B0:301C int 21              ; write cr
+06B0:301E xor al, al          ; if buffer is empty read next line
+06B0:3020 mov [0240], al      ; reset input index
+06B0:3023 mov [0243], al      ; reset result length for DOS
+06B0:3026 mov ah, 0A          ; STDIN read; str is terminated by CR (0Dh)
+06B0:3028 mov dx, 0242        ; input buffer, 1st byte=buffer size, 2nd length of the string
+06B0:302B int 21              ; read line from STDIN
+06B0:302D ; move cursor
+06B0:302D xor bx, bx
+06B0:302F mov ah, 3
+06B0:3031 int 10
+06B0:3033 mov ah, 2
+06B0:3035 mov dl, [243]
+06B0:3039 inc dl
+06B0:303B int 10
+06B0:303D ;@get_from_buffer:
+06B0:303D xor  ax, ax
+06B0:303F mov  si, 0244       ; input buffer+2, contains the string
+06B0:3042 add  si, [0240]     ; buffer beginning + input_index
+06B0:3046 inc  byte [0240]    ; advance input index
+06B0:304A lodsb               ; load next byte
+06B0:304B pop  si             ; restore IP
+06B0:304C push ax
+06B0:304D lodsw               ; NEXT
+06B0:304E jmp ax
+06B0:3050 
+-a 3100
+06B0:3100 db 3,"xor"
+06B0:3104 ; XT xor
+06B0:3104 pop  ax
+06B0:3105 pop  bx
+06B0:3106 xor  ax, bx
+06B0:3108 push ax
+06B0:3109 lodsw
+06B0:310A jmp ax
+06B0:310C 
+-; DEFINE PRIMITIVE
+-a 3200
+06B0:3200 db 1,"c!"
+06B0:3203 ; XT c!
+06B0:3203 pop di
+06B0:3204 pop ax
+06B0:3205 stosb
+06B0:3206 lodsw
+06B0:3207 jmp ax
+06B0:3209 
+-; DEFINE PRIMITIVE
+-a 3300
+06B0:3300 db 4,"over"
+06B0:3305 ; XT over
+06B0:3305 mov  bx, sp
+06B0:3307 mov  ax, [bx+2]
+06B0:330A push ax
+06B0:330B lodsw
+06B0:330C jmp ax
+06B0:330E 
+-; DEFINE PRIMITIVE
+-a 3400
+06B0:3400 db 4,"crlf"
+06B0:3405 ; XT crlf
+06B0:3405 mov dx, 0A          ; write lf
+06B0:3408 mov ah, 2
+06B0:340A int 21
+06B0:340C mov dx, 0D          ; write cr
+06B0:340F mov ah, 2
+06B0:3411 int 21
+06B0:3413 lodsw
+06B0:3414 jmp ax
+06B0:3416 
