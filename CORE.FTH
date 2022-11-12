@@ -36,7 +36,7 @@
   lit exit , ;
 
 : . ( n -- )
-    dup 0 < if 45 emit 65535 * then
+    dup 0 < if 45 emit -1 * then
     10 /mod ?dup if . then
     48 + emit ;
 
