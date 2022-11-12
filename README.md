@@ -31,3 +31,7 @@ After everything starts working, the next step will be to write a `meta-compiler
  
  This thing is in early phase and very incomplete, and possibly buggy. There is no meta-compiler yet, but I want to build one at some point.
  
+ ## Known issues
+ 
+  * The end of line of the source file should be either CRLF or CR.
+  * There must be a new line at the end of the file
