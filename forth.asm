@@ -41,7 +41,7 @@ dw B00
 
 a 306
 ; LAST_WORD
-dw 3400
+dw 3500
 
 a 350
 db "Welcome to Armageddon v0.001","$"
@@ -136,12 +136,11 @@ jmp ax
 
 ; DEFINE PRIMITIVE
 a 1300
-db 4,"quit"
-; XT QUIT
-xor ah,ah
+db 3,"bye"
+; XT BYE
+mov ah, 4C
+xor al, al
 int 21
-jmp 0
-xor ax,ax
 
 ; DEFINE PRIMITIVE
 a 1400
@@ -628,4 +627,12 @@ add  ax, cx           ; advance dp
 stosw
 lodsw
 jmp ax
+
+; DEFINE PRIMITIVE
+a 3500
+db 5,"(bye)"
+; XT BYE-WITH
+pop ax
+mov ah, 4C
+int 21
 

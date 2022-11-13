@@ -1,10 +1,11 @@
 : ok 79 emit 75 emit ;
-: assert ( bool -- ) if ok else 70 emit quit then ;
+: fail 70 emit 65 emit 73 emit 76 emit 1 (bye) ;
+: assert ( bool -- ) if ok else fail then ;
 
 : =assert ( n1 n2 -- )
   2dup <> if
     swap . 60 emit 62 emit .
-    quit
+    32 emit fail
   else
     drop drop ok
   then ;
@@ -120,7 +121,7 @@ depth 0 =assert
     repeat
     drop drop ;
 
-5 fact 120 =assert
+8 fact 40320 =assert
 
 depth 0 =assert
 
@@ -128,4 +129,25 @@ depth 0 =assert
 
 test-until 2048  =assert
 
+variable c
+0 c !
+: nested
+  0
+  begin
+    1 + 9
+    begin
+      dup 0 >=
+    while
+      1 -
+      c @ 1 + c !
+    repeat
+    drop dup 10 >=
+  until
+  drop ;
+
+nested
+c @ 100 =assert
+
 depth 0 =assert
+
+( END OF TESTS )
