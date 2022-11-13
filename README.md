@@ -33,5 +33,5 @@ After everything starts working, the next step will be to write a `meta-compiler
  
  ## Known issues
  
-  * The end of line of the source file should be either CRLF or CR.
+  * The end of line of the source file should be either CRLF or CR, but not LF.
   * There must be a new line at the end of the file.
