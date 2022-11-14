@@ -41,7 +41,7 @@ dw B00
 
 a 306
 ; LAST_WORD
-dw 3500
+dw 3800
 
 a 350
 db "Welcome to Armageddon v0.001","$"
@@ -635,4 +635,40 @@ db 5,"(bye)"
 pop ax
 mov ah, 4C
 int 21
+
+; DEFINE PRIMITIVE
+a 3600
+db 6,"lshift"
+; XT lshift
+pop  cx
+pop  ax
+shl  ax, cl
+push ax
+lodsw
+jmp  ax
+
+; DEFINE PRIMITIVE
+a 3700
+db 6,"rshift"
+; XT rshift
+pop  cx
+pop  ax
+shr  ax, cl
+push ax
+lodsw
+jmp  ax
+
+
+; DEFINE PRIMITIVE
+a 3800
+db 2,"c,"
+; XT c,
+mov di, 304          ; 304 = var_here
+pop ax               ; number to be written
+mov bx, [di]         ; bx = here
+mov byte [bx], al    ; write out to here
+inc bx               ; advance here
+mov [di], bx
+lodsw
+jmp ax
 

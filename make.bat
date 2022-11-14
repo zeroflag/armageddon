@@ -10,6 +10,7 @@ debug.com < src
 del src
 echo "bin generated"
 type core.fth > in.fth
+type asm.fth >> in.fth
 type test.fth >> in.fth
 echo bye >> in.fth
 forth.com < in.fth > make.log

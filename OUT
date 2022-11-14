@@ -41,7 +41,7 @@
 06B0:0306 
 -a 306
 06B0:0306 ; LAST_WORD
-06B0:0306 dw 3500
+06B0:0306 dw 3800
 06B0:0308 
 -a 350
 06B0:0350 db "Welcome to Armageddon v0.001","$"
@@ -636,3 +636,39 @@
 06B0:3507 mov ah, 4C
 06B0:3509 int 21
 06B0:350B 
+-; DEFINE PRIMITIVE
+-a 3600
+06B0:3600 db 6,"lshift"
+06B0:3607 ; XT lshift
+06B0:3607 pop  cx
+06B0:3608 pop  ax
+06B0:3609 shl  ax, cl
+06B0:360B push ax
+06B0:360C lodsw
+06B0:360D jmp  ax
+06B0:360F 
+-; DEFINE PRIMITIVE
+-a 3700
+06B0:3700 db 6,"rshift"
+06B0:3707 ; XT rshift
+06B0:3707 pop  cx
+06B0:3708 pop  ax
+06B0:3709 shr  ax, cl
+06B0:370B push ax
+06B0:370C lodsw
+06B0:370D jmp  ax
+06B0:370F 
+-
+-; DEFINE PRIMITIVE
+-a 3800
+06B0:3800 db 2,"c,"
+06B0:3803 ; XT c,
+06B0:3803 mov di, 304          ; 304 = var_here
+06B0:3806 pop ax               ; number to be written
+06B0:3807 mov bx, [di]         ; bx = here
+06B0:3809 mov byte [bx], al    ; write out to here
+06B0:380B inc bx               ; advance here
+06B0:380C mov [di], bx
+06B0:380E lodsw
+06B0:380F jmp ax
+06B0:3811 
