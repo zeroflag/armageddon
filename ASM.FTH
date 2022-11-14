@@ -46,17 +46,19 @@
 
 : rm-r ( reg/m reg -- ) 3 lshift + 192 + c, ;
 
-: mov16/rr 139 c, rm-r ;
-: add16/rr 3   c, rm-r ;
-: or16/rr  11  c, rm-r ;
-: and16/rr 35  c, rm-r ;
-: sub16/rr 43  c, rm-r ;
-: xor16/rr 51  c, rm-r ;
-: cmp16/rr 59  c, rm-r ;
+: mov16/rr  139  c, rm-r ;
+: add16/rr  3    c, rm-r ;
+: or16/rr   11   c, rm-r ;
+: and16/rr  35   c, rm-r ;
+: sub16/rr  43   c, rm-r ;
+: xor16/rr  51   c, rm-r ;
+: cmp16/rr  59   c, rm-r ;
+: test16/rr 133  c, rm-r ;
 
 : m-r ( mem reg -- ) 3 lshift + c, ;
 : r-m ( reg mem -- ) swap m-r ;
 
+: add16/mr 3   c, m-r ;
 : mov16/mr 139 c, m-r ;
 : mov8/mr  138 c, m-r ;
 : mov16/rm 137 c, r-m ;
@@ -65,6 +67,8 @@
 : not16/r  247 c, 2 rm-r ;
 : idiv16/r 247 c, 7 rm-r ;
 : imul16/r 247 c, 5 rm-r ;
+
+: jz 116 c, c, ;
 
 : NEXT lodsw ax jmp/r ;
 
@@ -187,7 +191,21 @@ primitive: lit
   lodsw
   ax push
   NEXT ;
-  
+
+primitive: branch
+  [si] si add16/mr
+  NEXT ;
+
+primitive: branch0
+  ax pop
+  ax ax test16/rr
+  4 jz             ( @dojump )
+  lodsw            ( skip the address )
+  NEXT
+( @dojump )
+  [si] si add16/mr
+  NEXT ;
+
 primitive: bye    
   ax ax xor16/rr
   76 ah mov8/ir
