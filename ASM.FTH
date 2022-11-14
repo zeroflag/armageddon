@@ -31,6 +31,7 @@
 : stosw ( -- ) 171 c, ;
 : lodsb ( -- ) 172 c, ;
 : lodsw ( -- ) 173 c, ;
+: cwd   ( -- ) 153 c, ;
 
 : int ( n -- ) 205 c, c, ;
 
@@ -57,9 +58,13 @@
 : r-m ( reg mem -- ) swap m-r ;
 
 : mov16/mr 139 c, m-r ;
+: mov8/mr  138 c, m-r ;
 : mov16/rm 137 c, r-m ;
 
-: jmp/r 255 c, 4 rm-r ;
+: jmp/r    255 c, 4 rm-r ;
+: not16/r  247 c, 2 rm-r ;
+: idiv16/r 247 c, 7 rm-r ;
+: imul16/r 247 c, 5 rm-r ;
 
 : NEXT lodsw ax jmp/r ;
 
@@ -132,18 +137,47 @@ primitive: -
   ax push
   NEXT ;
 
+primitive: /mod
+  bx pop
+  ax pop
+  dx dx xor16/rr
+  cwd
+  bx idiv16/r
+  dx push
+  ax push
+  NEXT
+
+primitive: *
+  ax pop
+  bx pop
+  bx imul16/r 
+  ax push
+  NEXT
+
 primitive: !
   di pop
   ax pop
   stosw
   NEXT ;
 
-( TODO write test )
 primitive: c!
   di pop
   ax pop
   stosb
   NEXT ;
+
+primitive: @
+  bx pop
+  [bx] ax mov16/mr
+  ax push
+  NEXT
+
+primitive: c@
+  bx pop
+  ax ax xor16/rr
+  [bx] al mov8/mr
+  ax push
+  NEXT
 
 primitive: exec
   ax pop
@@ -154,3 +188,12 @@ primitive: lit
   ax push
   NEXT
   
+primitive: bye    
+  ax ax xor16/rr
+  76 ah mov8/ir
+  33 int ;
+
+primitive: (bye)    
+  ax pop
+  76 ah mov8/ir
+  33 int ;

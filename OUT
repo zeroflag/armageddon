@@ -480,13 +480,14 @@
 06B0:2905 pop bx
 06B0:2906 pop ax
 06B0:2907 xor dx, dx
-06B0:2909 cdq
-06B0:290B idiv bx
-06B0:290D push dx
-06B0:290E push ax
-06B0:290F lodsw
-06B0:2910 jmp  ax
-06B0:2912 
+06B0:2909 cdw
+          ^ Error
+06B0:2909 idiv bx
+06B0:290B push dx
+06B0:290C push ax
+06B0:290D lodsw
+06B0:290E jmp  ax
+06B0:2910 
 -a 2A00
 06B0:2A00 db 4,"drop"
 06B0:2A05 ; XT drop

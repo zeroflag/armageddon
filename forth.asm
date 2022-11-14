@@ -480,7 +480,7 @@ db 4,"/mod"
 pop bx
 pop ax
 xor dx, dx
-cdq
+cdw
 idiv bx
 push dx
 push ax

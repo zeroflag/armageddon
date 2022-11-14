@@ -185,6 +185,10 @@ xt: exec-test exec 234 =assert
 
 test-lit 35 =assert
 
+variable v
+255 v c! 
+v c@ 255 =assert
+
 depth 0 =assert
 
 ( END OF TESTS )
