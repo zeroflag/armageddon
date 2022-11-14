@@ -145,14 +145,14 @@ primitive: /mod
   bx idiv16/r
   dx push
   ax push
-  NEXT
+  NEXT ;
 
 primitive: *
   ax pop
   bx pop
   bx imul16/r 
   ax push
-  NEXT
+  NEXT ;
 
 primitive: !
   di pop
@@ -170,23 +170,23 @@ primitive: @
   bx pop
   [bx] ax mov16/mr
   ax push
-  NEXT
+  NEXT ;
 
 primitive: c@
   bx pop
   ax ax xor16/rr
   [bx] al mov8/mr
   ax push
-  NEXT
+  NEXT ;
 
 primitive: exec
   ax pop
-  ax jmp/r
+  ax jmp/r ;
 
 primitive: lit
   lodsw
   ax push
-  NEXT
+  NEXT ;
   
 primitive: bye    
   ax ax xor16/rr
