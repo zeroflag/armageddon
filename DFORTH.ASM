@@ -1,7 +1,7 @@
 ; ARMAGEDDON FORTH in DEBUG.COM
 ; A classic DTC Forth defined in DEBUG.COM
 
-n forth.com
+n dforth.com
 rcx FFFF
 a 100 
 ; ENTRY POINT
@@ -44,7 +44,7 @@ a 306
 dw 3800
 
 a 350
-db "Welcome to Armageddon v0.001","$"
+db "Welcome to DFORTH v0.001","$"
 
 a 400
 ; ENTER WORD - ADDR=400h
