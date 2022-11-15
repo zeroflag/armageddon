@@ -67,10 +67,11 @@
 : not16/r  247 c, 2 rm-r ;
 : idiv16/r 247 c, 7 rm-r ;
 : imul16/r 247 c, 5 rm-r ;
-: shl16/rr 211 c, 4 rm-r ;
-: shr16/rr 211 c, 5 rm-r ;
+: shl16cl/r 211 c, 4 rm-r ;
+: shr16cl/r 211 c, 5 rm-r ;
 
-: jz 116 c, c, ;
+: jz  116 c, c, ;
+: jnl 125 c, c, ;
 
 : NEXT lodsw ax jmp/r ;
 
@@ -126,14 +127,14 @@ primitive: and
 primitive: lshift
   cx pop
   ax pop
-  cx, ax shl16/rr
+  ax shl16cl/r
   ax push
   NEXT ;
 
 primitive: rshift
   cx pop
   ax pop
-  cx, ax shr16/rr
+  ax shr16cl/r
   ax push
   NEXT ;   
 
@@ -205,6 +206,17 @@ primitive: exec
 
 primitive: lit
   lodsw
+  ax push
+  NEXT ;
+
+primitive: <
+  ax ax xor16/rr
+  bx pop
+  dx pop  
+  bx dx cmp16/rr
+  3 jnl             ( @not_less )  
+  65535 ax mov16/ir
+( @not_less: )
   ax push
   NEXT ;
 
