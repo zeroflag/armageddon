@@ -210,12 +210,11 @@ jmp ax
 a 1B00
 db 1,","
 ; XT ,
-mov di, 304          ; 304 = var_here
+mov bx, 304          ; 304 = var_here
+mov di, [bx]         ; bx = here
 pop ax               ; number to be written
-mov bx, [di]         ; bx = here
-mov [bx], ax         ; write out to here
-add bx, 2            ; advance here
-mov [di], bx
+stosw
+mov [bx], di
 lodsw
 jmp ax
 
@@ -663,12 +662,11 @@ jmp  ax
 a 3800
 db 2,"c,"
 ; XT c,
-mov di, 304          ; 304 = var_here
+mov bx, 304          ; 304 = var_here
+mov di, [bx]         ; bx = here
 pop ax               ; number to be written
-mov bx, [di]         ; bx = here
-mov byte [bx], al    ; write out to here
-inc bx               ; advance here
-mov [di], bx
+stosb
+mov [bx], di
 lodsw
 jmp ax
 

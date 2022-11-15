@@ -210,15 +210,14 @@
 -a 1B00
 06B0:1B00 db 1,","
 06B0:1B02 ; XT ,
-06B0:1B02 mov di, 304          ; 304 = var_here
-06B0:1B05 pop ax               ; number to be written
-06B0:1B06 mov bx, [di]         ; bx = here
-06B0:1B08 mov [bx], ax         ; write out to here
-06B0:1B0A add bx, 2            ; advance here
-06B0:1B0D mov [di], bx
-06B0:1B0F lodsw
-06B0:1B10 jmp ax
-06B0:1B12 
+06B0:1B02 mov bx, 304          ; 304 = var_here
+06B0:1B05 mov di, [bx]         ; bx = here
+06B0:1B07 pop ax               ; number to be written
+06B0:1B08 stosw
+06B0:1B09 mov [bx], di
+06B0:1B0B lodsw
+06B0:1B0C jmp ax
+06B0:1B0E 
 -; DEFINE WORD - immediate
 -a 1C00
 06B0:1C00 db 4,"word"
@@ -663,12 +662,11 @@
 -a 3800
 06B0:3800 db 2,"c,"
 06B0:3803 ; XT c,
-06B0:3803 mov di, 304          ; 304 = var_here
-06B0:3806 pop ax               ; number to be written
-06B0:3807 mov bx, [di]         ; bx = here
-06B0:3809 mov byte [bx], al    ; write out to here
-06B0:380B inc bx               ; advance here
-06B0:380C mov [di], bx
-06B0:380E lodsw
-06B0:380F jmp ax
-06B0:3811 
+06B0:3803 mov bx, 304          ; 304 = var_here
+06B0:3806 mov di, [bx]         ; bx = here
+06B0:3808 pop ax               ; number to be written
+06B0:3809 stosb
+06B0:380A mov [bx], di
+06B0:380C lodsw
+06B0:380D jmp ax
+06B0:380F 

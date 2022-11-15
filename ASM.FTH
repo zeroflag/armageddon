@@ -200,6 +200,22 @@ primitive: c@
   ax push
   NEXT ;
 
+primitive: ,
+  772 bx mov16/ir     ( 304 = var_here )
+  [bx] di mov16/mr    ( di = here )
+  ax pop
+  stosw
+  di [bx] mov16/rm    ( update var_here )
+  NEXT ;
+
+primitive: c,
+  772 bx mov16/ir     ( 304 = var_here )
+  [bx] di mov16/mr    ( di = here )
+  ax pop
+  stosb
+  di [bx] mov16/rm    ( update var_here )
+  NEXT ;
+
 primitive: exec
   ax pop
   ax jmp/r ;
