@@ -63,12 +63,13 @@
 : mov8/mr  138 c, m-r ;
 : mov16/rm 137 c, r-m ;
 
-: jmp/r    255 c, 4 rm-r ;
-: not16/r  247 c, 2 rm-r ;
-: idiv16/r 247 c, 7 rm-r ;
-: imul16/r 247 c, 5 rm-r ;
+: jmp/r     255 c, 4 rm-r ;
+: not16/r   247 c, 2 rm-r ;
+: idiv16/r  247 c, 7 rm-r ;
+: imul16/r  247 c, 5 rm-r ;
 : shl16cl/r 211 c, 4 rm-r ;
 : shr16cl/r 211 c, 5 rm-r ;
+: 1shr16/r  209 c, 5 rm-r ;
 
 : jz  116 c, c, ;
 : jnl 125 c, c, ;
@@ -82,17 +83,17 @@ primitive: swap
   bx pop
   ax push
   bx push
-  NEXT ;
+  NEXT
 
 primitive: drop
   ax pop
-  NEXT ;
+  NEXT
 
 primitive: dup
   ax pop
   ax push
   ax push
-  NEXT ;
+  NEXT
 
 primitive: rot
   cx pop
@@ -101,62 +102,62 @@ primitive: rot
   bx push
   cx push
   ax push
-  NEXT ;
+  NEXT
 
 primitive: or
   ax pop
   bx pop
   bx ax or16/rr
   ax push
-  NEXT ;
+  NEXT
 
 primitive: xor
   ax pop
   bx pop
   bx ax xor16/rr
   ax push
-  NEXT ;
+  NEXT
 
 primitive: and
   ax pop
   bx pop
   bx ax and16/rr
   ax push
-  NEXT ;
+  NEXT
 
 primitive: lshift
   cx pop
   ax pop
   ax shl16cl/r
   ax push
-  NEXT ;
+  NEXT
 
 primitive: rshift
   cx pop
   ax pop
   ax shr16cl/r
   ax push
-  NEXT ;   
+  NEXT   
 
 primitive: emit
   dx pop
   2  ah mov8/ir
   33 int
-  NEXT ;
+  NEXT
 
 primitive: +
   ax pop
   bx pop
   bx ax add16/rr
   ax push
-  NEXT ;
+  NEXT
 
 primitive: -
   bx pop
   ax pop
   bx ax sub16/rr
   ax push
-  NEXT ;
+  NEXT
 
 primitive: /mod
   bx pop
@@ -166,64 +167,74 @@ primitive: /mod
   bx idiv16/r
   dx push
   ax push
-  NEXT ;
+  NEXT
 
 primitive: *
   ax pop
   bx pop
   bx imul16/r 
   ax push
-  NEXT ;
+  NEXT
 
 primitive: !
   di pop
   ax pop
   stosw
-  NEXT ;
+  NEXT
 
 primitive: c!
   di pop
   ax pop
   stosb
-  NEXT ;
+  NEXT
 
 primitive: @
   bx pop
   [bx] ax mov16/mr
   ax push
-  NEXT ;
+  NEXT
 
 primitive: c@
   bx pop
   ax ax xor16/rr
   [bx] al mov8/mr
   ax push
-  NEXT ;
+  NEXT
 
 primitive: ,
-  772 bx mov16/ir     ( 304 = var_here )
+  772 bx mov16/ir     ( 0x304 = var_here )
   [bx] di mov16/mr    ( di = here )
   ax pop
   stosw
   di [bx] mov16/rm    ( update var_here )
-  NEXT ;
+  NEXT
 
 primitive: c,
-  772 bx mov16/ir     ( 304 = var_here )
+  772 bx mov16/ir     ( 0x304 = var_here )
   [bx] di mov16/mr    ( di = here )
   ax pop
   stosb
   di [bx] mov16/rm    ( update var_here )
-  NEXT ;
+  NEXT
+
+primitive: depth
+  512 ax mov16/ir     ( 0x200 = TOS )
+  sp bx mov16/rr
+  bx ax sub16/rr
+  ( 1 cx mov16/ir )
+  ( ax shr16cl/r )
+  ax 1shr16/r
+  ax push
+  NEXT  
 
 primitive: exec
   ax pop
-  ax jmp/r ;
+  ax jmp/r
 
 primitive: lit
   lodsw
   ax push
-  NEXT ;
+  NEXT
 
 primitive: <
   ax ax xor16/rr
@@ -234,11 +245,11 @@ primitive: <
   65535 ax mov16/ir
 ( @not_less: )
   ax push
-  NEXT ;
+  NEXT
 
 primitive: branch
   [si] si add16/mr
-  NEXT ;
+  NEXT
 
 primitive: branch0
   ax pop
@@ -248,14 +259,14 @@ primitive: branch0
   NEXT
 ( @dojump )
   [si] si add16/mr
-  NEXT ;
+  NEXT
 
-primitive: bye    
+primitive: bye
   ax ax xor16/rr
   76 ah mov8/ir
-  33 int ;
+  33 int
 
 primitive: (bye)    
   ax pop
   76 ah mov8/ir
-  33 int ;
+  33 int
