@@ -14,7 +14,8 @@ You have no choice but to build a programming language in the debugger by laying
 
 You start defining a FORTH. You write the [primitieves](DFORTH.ASM#L107) and the inner interpreter in assembly, you lay out dictionary structure in the memory. Then you compile the [text interpreter](DFORTH.ASM#L58) and the [defining words](DFORTH.ASM#L395) on paper then you enter each byte one by one. Then you can write the [control flow structures](CORE.FTH) in FORTH. 
 
-After everything starts working, the next step will be to write a `meta-compiler` and create a new, more powerful FORTH out of the original version.
+You name this version DFORTH (Debug Forth) which is going to host a `meta-compiler`. The next step is to create a new, more powerful version of the language out of original one. You write this version entirely in DFORTH. The primitives are defined in [DFORTH assembler](ASM.FTH).
+
 
 ## Usage
 
@@ -26,10 +27,10 @@ After everything starts working, the next step will be to write a `meta-compiler
  * `make.bat`
  * `forth.com`
  
- The `make.bat` script builds the project (by redirecting `forth.asm` to the stdin of `debug.com`), runs `forth.com` and loads `core.forth`. You can start `forth.com` afterwards, but by default the `core.forth` file is not loaded.
- You can do that manually by running `forth.com < core.forth`. Unfortunately there must be a `bye` at the end of `core.forth`, so you can't play with it interactivly because the process will exit (without the `bye` the process would hang because of how stdin redirect works in DOS). But you can start `forth.com` alone and type in commands interactivly (this is what I did on the 2nd screenshot).
+ The `make.bat` script builds the project (by redirecting `dforth.asm` to the stdin of `debug.com`), runs `dforth.com` and loads `core.forth`. You can start `dforth.com` afterwards, but by default the `core.forth` file is not loaded.
+ You can do that manually by running `dforth.com < core.forth`. Unfortunately there must be a `bye` at the end of `core.forth`, so you can't play with it interactivly because the process will exit (without the `bye` the process would hang because of how stdin redirect works in DOS). But you can start `forth.com` alone and type in commands interactivly (this is what I did on the 2nd screenshot).
  
- This thing is in early phase and very incomplete, and possibly buggy. There is no meta-compiler yet, but I want to build one at some point.
+ This thing is in early phase and very incomplete, and possibly buggy. There is no meta-compiler yet.
  
  ## Known issues
  
