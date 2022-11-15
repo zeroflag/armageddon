@@ -109,6 +109,14 @@ depth 0 =assert
 5 4 >=         assert
 5 6 <=         assert
 
+10    0 lshift    10 =assert
+10    0 rshift    10 =assert
+0     0 lshift     0 =assert
+0     0 rshift     0 =assert
+1234  5 lshift 39488 =assert
+39488 5 rshift  1234 =assert
+-456  2 lshift -1824 =assert
+
 depth 0 =assert
 
 variable v

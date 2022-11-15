@@ -67,6 +67,8 @@
 : not16/r  247 c, 2 rm-r ;
 : idiv16/r 247 c, 7 rm-r ;
 : imul16/r 247 c, 5 rm-r ;
+: shl16/rr 211 c, 4 rm-r ;
+: shr16/rr 211 c, 5 rm-r ;
 
 : jz 116 c, c, ;
 
@@ -120,6 +122,20 @@ primitive: and
   bx ax and16/rr
   ax push
   NEXT ;
+
+primitive: lshift
+  cx pop
+  ax pop
+  cx, ax shl16/rr
+  ax push
+  NEXT ;
+
+primitive: rshift
+  cx pop
+  ax pop
+  cx, ax shr16/rr
+  ax push
+  NEXT ;   
 
 primitive: emit
   dx pop
