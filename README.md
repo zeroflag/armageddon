@@ -12,7 +12,7 @@ You have no choice but to build a programming language in the debugger by laying
 
 <img src="imgs/armageddon1.png" align="center">
 
-You start defining a FORTH. You write the [primitieves](DFORTH.ASM#L107) and the inner interpreter in assembly, you lay out dictionary structure in the memory. Then you compile the [text interpreter](forth.asm#L58) and the [defining words](DFORTH.ASM#L395) on paper then you enter each byte one by one. Then you can write the [control flow structures](CORE.FTH) in FORTH. 
+You start defining a FORTH. You write the [primitieves](DFORTH.ASM#L107) and the inner interpreter in assembly, you lay out dictionary structure in the memory. Then you compile the [text interpreter](DFORTH.ASM#L58) and the [defining words](DFORTH.ASM#L395) on paper then you enter each byte one by one. Then you can write the [control flow structures](CORE.FTH) in FORTH. 
 
 After everything starts working, the next step will be to write a `meta-compiler` and create a new, more powerful FORTH out of the original version.
 
