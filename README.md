@@ -14,7 +14,7 @@ You have no choice but to build a programming language in the debugger by laying
 
 You start defining a FORTH. You write the [primitieves](DFORTH.ASM#L107) and the inner interpreter in assembly, you lay out dictionary structure in the memory. Then you compile the [text interpreter](DFORTH.ASM#L58) and the [defining words](DFORTH.ASM#L395) on paper then you enter each byte one by one. Then you can write the [control flow structures](CORE.FTH) in FORTH. 
 
-You name this version DFORTH (Debug Forth) which is going to host a `meta-compiler`. The next step is to create a new, more powerful version of the language out of original one. You write this version entirely in DFORTH. The primitives are defined in [DFORTH assembler](ASM.FTH).
+You name this version DFORTH (Debug Forth) which is going to host a `meta-compiler`. The next step is to create a new, more powerful version of the language out of original one. You write this version entirely in DFORTH. The new set of [primitives](ARMAGDN.FTH) are defined in [DFORTH assembler](ASM.FTH).
 
 
 ## Usage
