@@ -165,6 +165,9 @@ test-until 2048  =assert
 
 depth 0 =assert
 
+: exit-test begin 15 exit 0 until ;
+exit-test 15 =assert
+
 variable c
 0 c !
 : nested

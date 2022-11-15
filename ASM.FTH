@@ -25,7 +25,7 @@
 5 constant [di]
 6 constant [bp]
 7 constant [bx]
-7 constant [abs]
+7 constant [n]
 
 : stosb ( -- ) 170 c, ;
 : stosw ( -- ) 171 c, ;
@@ -259,6 +259,13 @@ primitive: branch0
   NEXT
 ( @dojump )
   [si] si add16/mr
+  NEXT
+
+primitive: exit
+  bp dec16
+  bp dec16
+  bp bx mov16/rr   ( TODO: [bp] si mov16/mr does not work )
+  [bx] si mov16/mr
   NEXT
 
 primitive: bye
