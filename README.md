@@ -28,7 +28,7 @@ You name this version DFORTH (Debug Forth) which is going to host a `meta-compil
  * `forth.com`
  
  The `make.bat` script builds the project (by redirecting `dforth.asm` to the stdin of `debug.com`), runs `dforth.com` and loads `core.forth`. You can start `dforth.com` afterwards, but by default the `core.forth` file is not loaded.
- You can do that manually by running `dforth.com < core.forth`. Unfortunately there must be a `bye` at the end of `core.forth`, so you can't play with it interactivly because the process will exit (without the `bye` the process would hang because of how stdin redirect works in DOS). But you can start `forth.com` alone and type in commands interactivly (this is what I did on the 2nd screenshot).
+ You can do that manually by running `dforth.com < core.forth`. Unfortunately there must be a `bye` at the end of `core.forth`, so you can't play with it interactivly because the process will exit (without the `bye` the process would hang because of how stdin redirect works in DOS). But you can start `dforth.com` alone and type in commands interactivly (this is what I did on the 2nd screenshot).
  
  This thing is in early phase and very incomplete, and possibly buggy. There is no meta-compiler yet.
  
