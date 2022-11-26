@@ -203,3 +203,6 @@ v c@ 255 =assert
 depth 0 =assert
 
 ( END OF TESTS )
+
+dump: (bye)
+
