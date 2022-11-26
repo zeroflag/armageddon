@@ -1,9 +1,11 @@
-( Armageddon FORTH bootstrapped by DFORTH  )
+( Armageddon FORTH, going to be bootstrapped by DFORTH  )
 
+( Inner Interpreter )
 : NEXT lodsw ax jmp/r ;
 
 : primitive: word mkhdr ;
 
+( New set of primitives defined by the Forth assembler )
 primitive: swap
   ax pop
   bx pop
@@ -65,6 +67,18 @@ primitive: rshift
   ax push
   NEXT   
 
+primitive: neg
+  ax pop
+  ax neg16/r
+  ax push
+  NEXT
+
+primitive: invert
+  ax pop
+  ax not16/r
+  ax push
+  NEXT
+
 primitive: emit
   dx pop
   2  ah mov8/ir
@@ -91,6 +105,15 @@ primitive: /mod
   dx dx xor16/rr
   cwd
   bx idiv16/r
+  dx push
+  ax push
+  NEXT
+
+primitive: u/mod
+  bx pop
+  ax pop
+  dx dx xor16/rr
+  bx div16/r
   dx push
   ax push
   NEXT
@@ -171,6 +194,17 @@ primitive: <
   ax push
   NEXT
 
+primitive: u<
+  ax ax xor16/rr
+  bx pop
+  dx pop
+  bx dx cmp16/rr
+  3 jnb             ( @not_below )
+  -1 ax mov16/ir
+( @not_below: )
+  ax push
+  NEXT
+
 primitive: branch
   [si] si add16/mr
   NEXT
@@ -186,8 +220,8 @@ primitive: branch0
   NEXT
 
 primitive: exit
-  bp dec16
-  bp dec16
+  bp dec16/r
+  bp dec16/r
   bp bx mov16/rr   ( TODO: [bp] si mov16/mr does not work )
   [bx] si mov16/mr
   NEXT
@@ -201,4 +235,21 @@ primitive: (bye)
   ax pop
   76 ah mov8/ir
   33 int
+
+: .c$ ( 0..15 -- c ) dup 10 u< if 48 + emit else 55 + emit then ;
+: .$ ( n -- ) 16 u/mod dup 16 u< if .c$ else .$ then .c$ ;
+: space 32 emit ;
+: crlf 13 emit 10 emit ;
+
+: dump ( n -- )
+  dup 16 ( cols ) 8 ( row ) * + swap
+  begin
+    2dup - 16 % 0 = if crlf dup .$ space 124 emit space then
+    dup c@ .$ space
+    1 +
+    2dup =
+  until ;
+
+: dump: ( -- ) word find if nip dump then ;
+
 
